@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f5f0" />
+    <meta name="description" content="Portfolio personal: ruang untuk ide, karya, dan cerita di balik proses kreatif." />
+    <title>Portfolio — Ruang Karya</title>
+    <link rel="stylesheet" href="./style/style.css" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23232924'/%3E%3Ctext x='14' y='46' font-size='44' fill='%23d9f279'%3E*%3C/text%3E%3C/svg%3E" />
+  </head>
+  <body id="home">
+    <a class="skip-link" href="#main">Langsung ke konten</a>
+    <header class="site-header" lang="en" data-navbar>
+      <div class="navbar-container">
+        <a class="navbar-logo" href="#home" aria-label="raff.co — Home">
+          <!-- Temporary wordmark. Replace its contents with the supplied 120 × 47 PNG. -->
+          <span class="navbar-wordmark" aria-hidden="true">ra<span class="navbar-wordmark-accent">ff</span>.co</span>
+        </a>
+        <button class="navbar-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="primary-navigation" hidden>
+          <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+        </button>
+        <nav class="site-nav" id="primary-navigation" aria-label="Main navigation">
+          <ul class="navbar-links">
+            <li class="navbar-pill" aria-hidden="true"></li>
+            <li><a class="navbar-link" href="#about" aria-current="location"><span class="navbar-label" data-label="about"><span>about</span></span></a></li>
+            <li><a class="navbar-link" data-section="services" role="link" aria-disabled="true" tabindex="-1"><span class="navbar-label" data-label="services"><span>services</span></span></a></li>
+            <li><a class="navbar-link" data-section="portfolio" role="link" aria-disabled="true" tabindex="-1"><span class="navbar-label" data-label="portfolio"><span>portfolio</span></span></a></li>
+            <li><a class="navbar-link" data-section="contact" role="link" aria-disabled="true" tabindex="-1"><span class="navbar-label" data-label="contact"><span>contact</span></span></a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <!-- Hero only. Its final Figma design is specified separately in docs/design/hero.md. -->
+      <section class="hero wrap" id="about" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="status-dot"></span> SEBUAH RUANG UNTUK BERTUMBUH</p>
+          <h1 id="hero-title">Dari ide kecil,<br>jadi sesuatu<br>yang <span class="serif">berarti.</span><span class="title-star" aria-hidden="true">✳</span></h1>
+          <p class="hero-description">Selamat datang di ruang karyaku. Tempat ide, eksplorasi, dan proses belajar bertemu dalam bentuk karya digital.</p>
+          <button class="button button-dark" type="button" disabled>Jelajahi karya <span aria-hidden="true">↗</span></button>
+          <div class="hero-note"><span class="note-line"></span> Dibangun dengan rasa ingin tahu.</div>
+        </div>
+        <div class="hero-art" role="img" aria-label="Ilustrasi abstrak bentuk geometris hijau, lingkaran, dan kartu catatan tentang proses kreatif">
+          <div class="art-grid"></div>
+          <span class="art-label">IDE → EKSPLORASI → KARYA</span>
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="art-circle"></div>
+          <div class="art-block"></div>
+          <span class="art-asterisk">✳</span>
+          <div class="art-note"><span>catatan untuk diri sendiri</span><strong>Keep making.<br>Keep growing.</strong><span class="note-arrow">↗</span></div>
+          <span class="art-caption">WORK IN PROGRESS, ALWAYS.</span>
+          <span class="art-index">001 / ∞</span>
+        </div>
+      </section>
+    </main>
+    <script src="./machine/machine.js" defer></script>
+  </body>
+</html>

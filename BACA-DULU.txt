@@ -1,0 +1,8 @@
+raff.co — paket file website
+
+Ekstrak ZIP, lalu jalankan index.html lewat Live Server di VS Code atau server statis lain.
+Tidak perlu npm. Pertahankan struktur folder style dan machine beserta isinya.
+Font lokal dan lisensinya sudah disertakan di style/fonts/.
+
+Status: navbar + satu hero draft awal. Hero belum mengikuti desain Figma final.
+Logo masih placeholder, menunggu PNG asli. Menu section yang belum ada nonaktif.
