@@ -3,29 +3,52 @@ function initializeNavbar(header = document.querySelector('[data-navbar]')) {
 
   const nav = header.querySelector('.site-nav');
   const list = header.querySelector('.navbar-links');
-  const links = [...header.querySelectorAll('.navbar-link')];
+  const sectionId = item => item.dataset.section || item.getAttribute('href')?.slice(1);
+  const links = [...header.querySelectorAll('.navbar-link')].map(item => {
+    const target = document.getElementById(sectionId(item));
+    if (!target || item.tagName !== 'BUTTON') return item;
+    // A pending section becomes a real navigation link when its content exists.
+    const link = document.createElement('a');
+    link.className = item.className;
+    link.innerHTML = item.innerHTML;
+    link.dataset.section = target.id;
+    link.href = `#${target.id}`;
+    item.replaceWith(link);
+    return link;
+  });
   const toggle = header.querySelector('.navbar-toggle');
   const logo = header.querySelector('.navbar-logo');
   const compact = window.matchMedia('(max-width: 759px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const targets = links.map(link => document.getElementById(link.dataset.section || link.hash.slice(1)));
-  links.forEach((link, index) => {
-    if (!targets[index]) return;
-    link.setAttribute('href', `#${targets[index].id}`);
-    link.removeAttribute('aria-disabled');
-    link.removeAttribute('tabindex');
-  });
+  const targets = links.map(link => document.getElementById(sectionId(link)));
   let active = links.find(link => link.hasAttribute('aria-current')) ?? links[0];
+  let selected = active;
+  let hovered = null;
+  let previewSelection = false;
+  let lastScrollY = window.scrollY;
   let scrollFrame;
   let pendingNavigation = false;
   let settleTimer;
 
   function positionPill() {
-    if (compact.matches || !active) return;
-    const bounds = active.getBoundingClientRect();
+    if (compact.matches) return;
+    const focus = document.activeElement;
+    const focused = links.includes(focus) && focus.matches(':focus-visible') ? focus : null;
+    const target = hovered || focused || selected;
+    if (!target) return;
+    const bounds = target.getBoundingClientRect();
     const container = list.getBoundingClientRect();
     list.style.setProperty('--pill-x', `${bounds.left - container.left}px`);
     list.style.setProperty('--pill-width', `${bounds.width}px`);
+  }
+
+  function select(link) {
+    selected = link;
+    links.forEach(item => {
+      item.toggleAttribute('data-selected', item === selected);
+      if (item.tagName === 'BUTTON') item.setAttribute('aria-pressed', String(item === selected));
+    });
+    positionPill();
   }
 
   function activate(link) {
@@ -34,7 +57,8 @@ function initializeNavbar(header = document.querySelector('[data-navbar]')) {
       if (item === active) item.setAttribute('aria-current', 'location');
       else item.removeAttribute('aria-current');
     });
-    positionPill();
+    if (!previewSelection) select(link);
+    else positionPill();
   }
 
   function setMenu(open, restoreFocus = false) {
@@ -74,26 +98,51 @@ function initializeNavbar(header = document.querySelector('[data-navbar]')) {
     syncFromScroll();
   }
 
-  links.forEach(link => {
+  function resumeScrollTracking() {
+    previewSelection = false;
+    finishNavigation();
+  }
+
+  links.forEach((link, index) => {
+    link.addEventListener('pointerenter', event => {
+      if (compact.matches || event.pointerType === 'touch') return;
+      hovered = link;
+      positionPill();
+    });
     link.addEventListener('click', event => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      if (!document.getElementById(link.hash.slice(1))) {
+      const keyboardActivation = event.detail === 0;
+      if (!targets[index]) {
         event.preventDefault();
-        setMenu(false);
+        previewSelection = true;
+        // A focus/scroll-into-view event queued before this click must not undo it.
+        lastScrollY = window.scrollY;
+        pendingNavigation = false;
+        clearTimeout(settleTimer);
+        select(link);
+        setMenu(false, compact.matches);
         return;
       }
       // Native anchors retain normal URL/history and smooth-scroll behavior.
+      previewSelection = false;
       pendingNavigation = true;
       clearTimeout(settleTimer);
       settleTimer = setTimeout(finishNavigation, 180);
       activate(link);
-      const keyboardActivation = event.detail === 0;
       setMenu(false, compact.matches && keyboardActivation);
     });
   });
 
+  nav.addEventListener('pointerleave', () => {
+    hovered = null;
+    positionPill();
+  });
+  nav.addEventListener('focusin', positionPill);
+  nav.addEventListener('focusout', () => requestAnimationFrame(positionPill));
+
   logo.addEventListener('click', event => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    previewSelection = false;
     pendingNavigation = true;
     clearTimeout(settleTimer);
     settleTimer = setTimeout(finishNavigation, 180);
@@ -114,17 +163,27 @@ function initializeNavbar(header = document.querySelector('[data-navbar]')) {
   });
 
   compact.addEventListener('change', () => {
+    hovered = null;
     const focusedLink = nav.contains(document.activeElement);
     setMenu(false, compact.matches && focusedLink);
     if (!compact.matches && document.activeElement === toggle) active.focus({ preventScroll: true });
     positionPill();
   });
-  window.addEventListener('scroll', scheduleScrollSync, { passive: true });
+  window.addEventListener('scroll', () => {
+    // Focusing sticky navigation can scroll the document automatically.
+    if (window.scrollY !== lastScrollY && !header.contains(document.activeElement)) previewSelection = false;
+    lastScrollY = window.scrollY;
+    scheduleScrollSync();
+  }, { passive: true });
   window.addEventListener('scrollend', finishNavigation);
-  window.addEventListener('wheel', finishNavigation, { passive: true });
+  window.addEventListener('wheel', resumeScrollTracking, { passive: true });
   window.addEventListener('touchstart', finishNavigation, { passive: true });
+  window.addEventListener('touchmove', resumeScrollTracking, { passive: true });
+  document.addEventListener('pointerdown', event => {
+    if (!header.contains(event.target)) resumeScrollTracking();
+  });
   window.addEventListener('keydown', event => {
-    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(event.key)) finishNavigation();
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(event.key)) resumeScrollTracking();
   });
   window.addEventListener('hashchange', scheduleScrollSync);
   window.addEventListener('pageshow', scheduleScrollSync);
