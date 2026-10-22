@@ -30,11 +30,13 @@ npx playwright install chromium
 npm test
 ```
 
-Jika Chromium sudah terpasang di `/usr/bin/chromium`, tes langsung memakainya. Lokasi browser lain dapat diberikan lewat `CHROMIUM_PATH`. Tes mencakup resume tools setelah Enter/touch, hold/drag/release CTA, bingkai utuh, satu viewport per section, filter, layout dengan teks 200%, parallax hero beserta reduced motion, dan preview hero. Server tes dijalankan otomatis dengan Python 3.
+Jika Chromium sudah terpasang di `/usr/bin/chromium`, tes langsung memakainya. Lokasi browser lain dapat diberikan lewat `CHROMIUM_PATH`. Tes mencakup toggle ulang ikon dan resume tools setelah Enter/touch, hold/drag/release CTA, bingkai utuh, satu viewport per section, filter, layout dengan teks 200%, opening cinematic hero beserta reduced motion, dan preview hero. Server tes dijalankan otomatis dengan Python 3.
 
-## Memilih animasi hero
+## Preview animasi hero
 
-Buka [preview hero](preview/hero.html) melalui server lokal, atau <https://hanazaishanz.github.io/portfolio/preview/hero.html>. Pemilik sudah memilih **parallax halus**, yang diterapkan pada hero utama. Di desktop, foto dan lingkaran mengikuti kursor secara halus; di HP hanya entrance bertahap. Efek menghormati reduced motion dan tidak terus berjalan saat sudah stabil atau hero tidak terlihat. Tiga tombol demo tetap membandingkan **parallax halus**, **pop-in playful**, dan **reveal elegan**; tombol putar ulang mengulangi entrance. Iframe demo menjalankan animasinya sendiri tanpa menggandakan animasi produksi.
+Buka [preview hero](preview/hero.html) melalui server lokal, atau <https://hanazaishanz.github.io/portfolio/preview/hero.html>. Opening mengikuti ide pemilik: judul tampil di tengah, berpindah ke posisi desain, lalu foto dan elemen pendukung muncul berurutan. Durasi sekitar 2,6 detik; tombol putar ulang menjalankan kembali animasi produksi yang sama. Scroll, interaksi, dan perubahan ukuran layar menyelesaikan intro langsung. Reduced motion menampilkan hero statis.
+
+Semua section utama mengisi ruang layar di bawah navbar. Grid proyek memenuhi lebar konten dan tinggi sisa setelah heading/filter; viewport pendek atau teks diperbesar boleh memanjangkan section agar tetap terbaca. Scrollbar disembunyikan tanpa menonaktifkan scrolling. CTA tetap bergerak setelah hold/drag dilepas; ikon tools aktif bisa ditutup dengan klik ulang atau otomatis setelah empat detik.
 
 ## Mengganti konten
 

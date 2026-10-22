@@ -32,6 +32,11 @@ test('touching a tool resets its appearance and restarts the loop without anothe
   const bounds = await tool.boundingBox();
   await page.touchscreen.tap(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
   await expect(tool).toHaveAttribute('aria-pressed', 'true');
+  await tool.tap();
+  await expect(tool).toHaveAttribute('aria-pressed', 'false');
+  const reopened = await tool.boundingBox();
+  await page.touchscreen.tap(reopened.x + reopened.width / 2, reopened.y + reopened.height / 2);
+  await expect(tool).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => tool.getAttribute('aria-pressed'), { timeout: 5500 }).toBe('false');
   const before = await offset(page);
   await page.waitForTimeout(400);
@@ -90,7 +95,7 @@ test('CTA shows complete frames and unstretched full sprite artwork at phone and
     await orbit.scrollIntoViewIfNeeded();
     await orbit.focus();
     await page.keyboard.press('Space');
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 12; i++) {
       const metrics = await orbit.evaluate((root) => {
         const r = root.getBoundingClientRect();
         return [...root.querySelectorAll('.contact-orbit-card')].filter((c) => c.style.visibility === 'visible' && Number(c.style.opacity) > .02).map((c) => {
@@ -99,7 +104,7 @@ test('CTA shows complete frames and unstretched full sprite artwork at phone and
           return { left: b.left-r.left, right: r.right-b.right, top: b.top-r.top, bottom: r.bottom-b.bottom, artWidth: art.offsetWidth, artHeight: art.offsetHeight, clip: getComputedStyle(art).overflow };
         });
       });
-      expect(metrics.length).toBeGreaterThan(0);
+      expect(metrics.length).toBeGreaterThanOrEqual(width < 600 ? 3 : 6);
       for (const m of metrics) {
         expect(Math.min(m.left,m.right,m.top,m.bottom)).toBeGreaterThanOrEqual(9);
         expect(Math.abs(m.artWidth-m.artHeight)).toBeLessThanOrEqual(1);
@@ -111,15 +116,17 @@ test('CTA shows complete frames and unstretched full sprite artwork at phone and
 });
 
 test('every main section fills one screen, cards fit both dimensions and filters keep their position', async ({ page }) => {
-  const viewports = [[320,740],[360,740],[375,667],[390,844],[414,896],[600,960],[768,1024],[820,1180],[1024,768],[1280,720],[1366,768],[1440,766],[1440,800],[1440,900],[1920,1080],[2560,1440]];
+  const viewports = [[320,740],[360,740],[375,667],[390,844],[414,896],[600,960],[768,1024],[820,1180],[1024,768],[1280,720],[1366,768],[1440,766],[1440,800],[1440,900],[1536,758],[1920,948],[1920,1080],[2560,1440]];
   await ready(page);
   for (const [width,height] of viewports) {
     await page.setViewportSize({ width, height });
     await page.waitForTimeout(100);
-    const metrics=await page.locator('main > section:not(#contact)').evaluateAll((sections) => sections.map((s) => ({ name:s.id||s.className, height:s.offsetHeight, screen:innerHeight-document.querySelector('header').offsetHeight })));
+    const metrics=await page.locator('main > section').evaluateAll((sections) => sections.map((s) => ({ name:s.id||s.className, height:s.offsetHeight, screen:innerHeight-document.querySelector('header').offsetHeight })));
     for (const m of metrics) expect(Math.abs(m.height-m.screen),`${width}×${height} ${m.name}: ${m.height}/${m.screen}`).toBeLessThanOrEqual(2);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}×${height}`).toBe(true);
     const section=await page.locator('#portfolio').boundingBox();
+    const gallery=await page.locator('.project-grid').evaluate(e=>({width:e.offsetWidth,shell:e.parentElement.offsetWidth}));
+    expect(Math.abs(gallery.width-gallery.shell)).toBeLessThanOrEqual(1);
     for (const card of await page.locator('.project-card').all()) {
       const r=await card.boundingBox();
       expect(r.y+r.height).toBeLessThanOrEqual(section.y+section.height+1);
@@ -192,7 +199,7 @@ test('custom certificate images remain whole and mobile touch dragging resumes a
   await page.route('http://127.0.0.1:8003/',route=>route.fulfill({contentType:'text/html',body:html}));
   await page.goto('http://127.0.0.1:8003/');
   const orbit=page.locator('.contact-orbit');
-  await expect(page.locator('.contact-orbit-card')).toHaveCount(8);
+  await expect(page.locator('.contact-orbit-card')).toHaveCount(12);
   await expect(page.locator('.contact-orbit-card img').first()).toHaveAttribute('alt','Example certificate');
   expect(await page.locator('.contact-orbit-card img').first().evaluate(e=>getComputedStyle(e).objectFit)).toBe('contain');
   await orbit.scrollIntoViewIfNeeded();
@@ -210,23 +217,69 @@ test('custom certificate images remain whole and mobile touch dragging resumes a
   await context.close();
 });
 
-test('all three hero demos remain independent of the chosen main animation', async ({ page }) => {
-  const errors=[];page.on('pageerror',(e)=>errors.push(e.message));
-  await ready(page);
-  await expect(page.locator('.hero')).toHaveAttribute('data-hero-motion','parallax');
-  await expect(page.locator('.hero')).toHaveAttribute('data-motion-ready','true');
+test('hero preview replays the same cinematic sequence used on the website', async ({ page }) => {
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/preview/hero.html');
-  await expect(page.frameLocator('#hero-preview').locator('.hero')).toBeVisible();
-  await page.waitForTimeout(300);
-  await expect(page.frameLocator('#hero-preview').locator('.hero')).not.toHaveAttribute('data-motion-ready','true');
-  for(const mode of ['parallax','playful','reveal']) {
-    await page.locator(`[data-mode="${mode}"]`).click();
-    await expect(page.locator(`[data-mode="${mode}"]`)).toHaveAttribute('aria-pressed','true');
-    expect(await page.frameLocator('#hero-preview').locator('.hero').evaluate((e)=>e.getAnimations({subtree:true}).length)).toBeGreaterThan(0);
-    if(mode!=='parallax') {
-      await page.waitForTimeout(100);
-      expect(await page.frameLocator('#hero-preview').locator('.hero-portrait-art').evaluate(e=>e.style.transform)).toBe('');
-    }
-  }
+  const hero=page.frameLocator('#hero-preview').locator('.hero');
+  await expect(hero).toHaveAttribute('data-hero-motion','cinematic');
+  await expect(hero).toHaveAttribute('data-scene-state','running');
+  await expect(hero).toHaveAttribute('data-scene-state','complete');
+  await page.locator('[data-replay]').click();
+  await expect(hero).toHaveAttribute('data-scene-state','running');
   expect(errors).toEqual([]);
+});
+
+test('a second click or Enter on the selected tool closes its name and resumes immediately', async ({ page }) => {
+  await ready(page);
+  await page.locator('.tools-marquee').scrollIntoViewIfNeeded();
+  const tool=page.locator('.tool-group').first().locator('[data-tool="figma"] button');
+  const bounds=await tool.boundingBox();
+  await page.mouse.click(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
+  await expect(tool).toHaveAttribute('aria-pressed','true');
+  await tool.click();await expect(tool).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('.tools-marquee')).not.toHaveAttribute('data-paused','true');
+  await expect(page.locator('[data-tool="figma"] .tool-name').first()).toBeHidden();
+  let before=await offset(page);await page.waitForTimeout(400);expect(await offset(page)).toBeLessThan(before-5);
+  await tool.focus();await page.keyboard.press('Enter');
+  await expect(tool).toHaveAttribute('aria-pressed','true');
+  await page.keyboard.press('Enter');
+  await expect(tool).toHaveAttribute('aria-pressed','false');
+  before=await offset(page);await page.waitForTimeout(400);expect(await offset(page)).toBeLessThan(before-5);
+});
+
+test('scrollbar is hidden while wheel scrolling, section alignment and the footer remain usable', async ({ page }) => {
+  await ready(page);
+  expect(await page.locator('html').evaluate(e=>getComputedStyle(e).scrollbarWidth)).toBe('none');
+  await page.mouse.wheel(0,700);
+  await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(600);
+  await expect.poll(()=>page.locator('#services').evaluate(e=>Math.abs(e.getBoundingClientRect().top-document.querySelector('header').offsetHeight))).toBeLessThan(2);
+  await page.locator('.nav-link[href="#portfolio"]').click();
+  await expect.poll(()=>page.locator('#portfolio').evaluate(e=>Math.abs(e.getBoundingClientRect().top-document.querySelector('header').offsetHeight))).toBeLessThan(2);
+  await page.locator('.site-footer').scrollIntoViewIfNeeded();
+  await expect(page.locator('.footer-copyright')).toBeInViewport();
+  await expect(page.locator('.footer-contact').last()).toBeInViewport();
+});
+
+test('CTA advances a card within two seconds and cycles through custom collections larger than its physical ring', async ({ page }) => {
+  const {readFileSync}=require('node:fs');
+  const figures=Array.from({length:17},(_,i)=>`<figure><img src="./assets/logo.svg" alt="Certificate ${i}"><figcaption>Certificate ${i}</figcaption></figure>`).join('');
+  const html=readFileSync('index.html','utf8').replace('data-preview-source="projects"','data-preview-source="custom"')
+    .replace('<template id="contact-custom-previews"></template>',`<template id="contact-custom-previews">${figures}</template>`);
+  await page.route('http://127.0.0.1:8003/',route=>route.fulfill({contentType:'text/html',body:html}));
+  await page.goto('/');
+  const orbit=page.locator('.contact-orbit');
+  await orbit.scrollIntoViewIfNeeded();
+  const angle=()=>page.locator('.contact-orbit-card').first().evaluate(e=>Number(e.style.transform.match(/rotateY\((.*?)deg/)[1]));
+  const before=await angle();await page.waitForTimeout(1950);
+  expect(Math.abs(await angle()-before)).toBeGreaterThan(30);
+  await orbit.focus();await page.keyboard.press('Space');
+  const seen=new Set();
+  for(let i=0;i<36;i++) {
+    const indexes=await page.locator('.contact-orbit-card').evaluateAll(cards=>cards
+      .filter(e=>!e.hidden&&e.style.visibility==='visible'&&Number(e.style.opacity)>.05)
+      .map(e=>Number(e.dataset.sourceIndex)));
+    indexes.forEach(index=>seen.add(index));
+    await page.keyboard.press('ArrowRight');
+  }
+  expect([...seen].sort((a,b)=>a-b)).toEqual(Array.from({length:17},(_,i)=>i));
 });

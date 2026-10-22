@@ -256,138 +256,168 @@
 
 (() => {
   "use strict";
+  const root = document.documentElement;
+  const header = document.querySelector(".site-header");
+  const projects = document.querySelector(".recent-projects");
+  const heading = projects?.querySelector(".projects-heading");
+  const grid = projects?.querySelector(".project-grid");
+  const contact = document.querySelector(".contact-section");
+  let scheduled = false;
 
-  const hero = document.querySelector('[data-hero-motion="parallax"]');
-  // The comparison page owns its iframe animation, including the other options.
-  if (!hero || window.frameElement?.hasAttribute("data-hero-demo")) return;
+  function measure() {
+    scheduled = false;
+    const screen = Math.max(1, window.innerHeight - header.offsetHeight);
+    root.style.setProperty("--nav-height", `${header.offsetHeight}px`);
+    root.style.setProperty("--screen-height", `${screen}px`);
+    if (grid && heading) {
+      const css = getComputedStyle(projects);
+      const shell = getComputedStyle(heading.parentElement);
+      const gap = parseFloat(getComputedStyle(grid).rowGap) || 0;
+      const rows = getComputedStyle(grid).gridTemplateColumns.split(" ").length === 2 ? 3 : 2;
+      const space = screen - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom)
+        - heading.offsetHeight - parseFloat(shell.rowGap);
+      grid.style.setProperty("--project-grid-height", `${Math.max(rows * 88 + gap * (rows - 1), space)}px`);
+    }
+    if (contact) {
+      const css = getComputedStyle(contact);
+      const textHeight = [".contact-title", ".contact-subtitle", ".contact-links"]
+        .reduce((sum, selector) => sum + contact.querySelector(selector).offsetHeight, 0);
+      const available = screen - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom)
+        - parseFloat(css.rowGap) * 3 - textHeight;
+      contact.style.setProperty("--orbit-available-height", `${Math.max(150, available)}px`);
+    }
+    window.dispatchEvent(new Event("raff:layout"));
+  }
+  function schedule() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(measure);
+  }
+  const observer = new ResizeObserver(schedule);
+  [header, heading, ...document.querySelectorAll(".contact-title,.contact-subtitle,.contact-links")]
+    .filter(Boolean).forEach(element => observer.observe(element));
+  window.addEventListener("resize", schedule, { passive: true });
+  window.visualViewport?.addEventListener("resize", schedule, { passive: true });
+  document.fonts?.ready.then(schedule);
+  measure();
+})();
 
-  const art = hero.querySelector(".hero-portrait-art");
-  const decoration = hero.querySelector(".hero-orbit");
-  const portrait = hero.querySelector(".hero-photo");
-  if (!art || !decoration) return;
+(() => {
+  "use strict";
 
+  const hero = document.querySelector('[data-hero-motion="cinematic"]');
+  const title = hero?.querySelector(".hero-title");
+  if (!hero || !title) return;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-  const entrances = new Set();
+  const animations = new Set();
+  let entered = false;
   let ready = false;
   let visible = false;
-  let entered = false;
-  let frame = null;
-  let lastTime = 0;
-  let targetX = 0;
-  let targetY = 0;
-  let x = 0;
-  let y = 0;
+  let safetyTimer;
+  let viewportWidth = window.innerWidth;
+  let viewportHeight = window.innerHeight;
 
-  function finishEntrances() {
-    for (const animation of entrances) animation.cancel();
-    entrances.clear();
+  function finish() {
+    entered = true;
+    window.clearTimeout(safetyTimer);
+    hero.removeAttribute("data-cinematic-pending");
+    title.style.removeProperty("z-index");
+    for (const animation of animations) animation.cancel();
+    animations.clear();
+    hero.dataset.sceneState = "complete";
   }
 
   function enter() {
     if (!ready || !visible || document.hidden || entered) return;
     entered = true;
-    if (reducedMotion.matches) return;
+    if (reducedMotion.matches || !title.animate) { finish(); return; }
 
-    const elements = [
-      [".hero-portrait", 1000, 60],
-      [".hero-title-better", 700, 180],
-      [".hero-title-call", 700, 280],
-      [".hero-title-name", 850, 400],
-      [".hero-description", 800, 650],
-      [".artwork-link", 750, 850],
-    ];
-    for (const [selector, duration, delay] of elements) {
+    const bounds = title.getBoundingClientRect();
+    const panel = hero.getBoundingClientRect();
+    const headerHeight = document.querySelector(".site-header")?.offsetHeight || 0;
+    const availableHeight = Math.min(panel.height, window.innerHeight - headerHeight);
+    const dx = window.innerWidth / 2 - bounds.left - bounds.width / 2;
+    const dy = panel.top + availableHeight / 2 - bounds.top - bounds.height / 2;
+    const scale = Math.min(1.12, (panel.width - 32) / bounds.width, (availableHeight - 32) / bounds.height);
+    const centered = `translate3d(${dx}px,${dy}px,0) scale(${scale})`;
+    const easing = "cubic-bezier(.76,0,.24,1)";
+    title.style.zIndex = "10";
+    hero.dataset.sceneState = "running";
+
+    function animate(selector, frames, duration, delay = 0) {
       const element = hero.querySelector(selector);
-      if (!element?.animate) continue;
-      const animation = element.animate([
-        { opacity: 0, transform: "translateY(24px)" },
-        { opacity: 1, transform: "translateY(0)" },
-      ], { duration, delay, easing: "cubic-bezier(.2,.8,.25,1)", fill: "backwards" });
-      entrances.add(animation);
-      animation.onfinish = () => entrances.delete(animation);
+      if (!element) return;
+      const animation = element.animate(frames, { duration, delay, easing, fill: "both" });
+      animations.add(animation);
     }
+
+    // A title card holds in the center, then travels to the real layout (FLIP).
+    animate(".hero-title", [
+      { opacity: 0, transform: `translate3d(${dx}px,${dy}px,0) scale(${scale * .96})`, offset: 0 },
+      { opacity: 1, transform: centered, offset: .22 },
+      { opacity: 1, transform: centered, offset: .48 },
+      { opacity: 1, transform: "translate3d(0,0,0) scale(1)", offset: 1 },
+    ], 1500);
+
+    // The portrait is the first new element; supporting shapes follow it.
+    animate(".hero-photo", [
+      { opacity: 0, clipPath: "inset(100% 0 0 0)", transform: "translateY(24px)" },
+      { opacity: 1, clipPath: "inset(0 0 0 0)", transform: "translateY(0)" },
+    ], 780, 1350);
+    animate(".hero-portrait-circle", [
+      { opacity: 0, transform: "scale(.88)" }, { opacity: 1, transform: "scale(1)" },
+    ], 620, 1650);
+    animate(".hero-orbit", [
+      { opacity: 0, transform: "translateX(30px)" }, { opacity: 1, transform: "translateX(0)" },
+    ], 650, 1750);
+    animate(".hero-square", [
+      { opacity: 0, transform: "translateY(16px) rotate(-5deg)" },
+      { opacity: 1, transform: "translateY(0) rotate(0)" },
+    ], 500, 1950);
+    animate(".hero-description", [
+      { opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "translateY(0)" },
+    ], 450, 2050);
+    animate(".artwork-link", [
+      { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+      { opacity: 1, clipPath: "inset(0 0 0 0)" },
+    ], 380, 2250);
+
+    Promise.allSettled([...animations].map(animation => animation.finished)).then(finish);
   }
 
-  function reset() {
-    if (frame !== null) window.cancelAnimationFrame(frame);
-    frame = null;
-    lastTime = 0;
-    targetX = targetY = x = y = 0;
-    art.style.removeProperty("transform");
-    decoration.style.removeProperty("transform");
+  if (!reducedMotion.matches) {
+    hero.dataset.cinematicPending = "true";
+    hero.dataset.sceneState = "preparing";
+    // A failed asset or script must never leave the page hidden.
+    safetyTimer = window.setTimeout(finish, 5000);
   }
-
-  function canMove() {
-    return ready && visible && !document.hidden && !reducedMotion.matches && finePointer.matches;
-  }
-
-  function tick(time) {
-    frame = null;
-    if (!canMove()) { reset(); return; }
-    // Keep the same damping on 60Hz and high-refresh displays; stop when settled.
-    const elapsed = lastTime ? Math.min(time - lastTime, 64) : 1000 / 60;
-    const damping = 1 - Math.pow(0.91, elapsed / (1000 / 60));
-    x += (targetX - x) * damping;
-    y += (targetY - y) * damping;
-    const settled = Math.abs(targetX - x) + Math.abs(targetY - y) < 0.002;
-    if (settled) { x = targetX; y = targetY; }
-
-    if (settled && x === 0 && y === 0) {
-      reset();
-      return;
-    }
-    // Keep the portrait's bottom edge covered as it moves inside the hero panel.
-    art.style.transform = `translate3d(${x * 7}px,${Math.max(0, y * 5)}px,0)`;
-    decoration.style.transform = `translate3d(${-x * 14}px,${-y * 11}px,0)`;
-    lastTime = time;
-    if (!settled) frame = window.requestAnimationFrame(tick);
-    else lastTime = 0;
-  }
-
-  function move() {
-    if (frame === null && canMove()) frame = window.requestAnimationFrame(tick);
-  }
-
-  hero.addEventListener("pointermove", (event) => {
-    if (event.pointerType !== "mouse" || !canMove()) return;
-    const bounds = hero.getBoundingClientRect();
-    targetX = Math.max(-1, Math.min(1, (event.clientX - bounds.left) / bounds.width * 2 - 1));
-    targetY = Math.max(-1, Math.min(1, (event.clientY - bounds.top) / bounds.height * 2 - 1));
-    move();
-  }, { passive: true });
-  hero.addEventListener("pointerleave", () => { targetX = targetY = 0; move(); });
-  hero.addEventListener("focusin", () => {
-    entered = true;
-    finishEntrances();
-  });
-  window.addEventListener("resize", reset, { passive: true });
-  window.addEventListener("blur", reset);
-
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     if (visible) enter();
-    else { reset(); finishEntrances(); }
+    else if (hero.dataset.sceneState === "running") finish();
   }).observe(hero);
+  hero.addEventListener("focusin", finish);
+  hero.addEventListener("pointerdown", finish, { passive: true });
+  window.addEventListener("wheel", () => { if (hero.hasAttribute("data-cinematic-pending")) finish(); }, { passive: true });
+  window.addEventListener("resize", () => {
+    const changed = viewportWidth !== window.innerWidth || viewportHeight !== window.innerHeight;
+    viewportWidth = window.innerWidth;
+    viewportHeight = window.innerHeight;
+    if (changed && hero.hasAttribute("data-cinematic-pending")) finish();
+  }, { passive: true });
+  document.addEventListener("keydown", event => { if (event.key === "Escape") finish(); });
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) { reset(); finishEntrances(); }
+    if (document.hidden && hero.dataset.sceneState === "running") finish();
     else enter();
   });
-  reducedMotion.addEventListener("change", () => {
-    if (reducedMotion.matches) { reset(); entered = true; finishEntrances(); }
-  });
-  finePointer.addEventListener("change", () => { if (!finePointer.matches) reset(); });
-
-  // Content stays visible by default, even without JS or while an asset loads.
-  Promise.allSettled([
-    document.fonts?.ready,
-    portrait?.decode?.(),
-  ]).then(() => {
+  reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) finish(); });
+  Promise.allSettled([document.fonts?.ready, hero.querySelector(".hero-photo")?.decode?.()]).then(() => {
     ready = true;
     hero.dataset.motionReady = "true";
-    enter();
+    window.requestAnimationFrame(enter);
   });
 })();
+
 
 (() => {
   "use strict";
@@ -407,14 +437,15 @@
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const pauseButton = orbit.querySelector("[data-orbit-pause]");
-  const speed = Math.max(0.5, Number(orbit.dataset.orbitSpeed) || 4.5);
-  const count = Math.max(8, usable.length);
-  const step = 360 / count;
+  const speed = Math.max(0.5, Number(orbit.dataset.orbitSpeed) || 18);
+  // Twelve reusable surfaces; their sources change only on the hidden back arc.
   const cards = [];
+  let slots = 12;
+  let step = 30;
   let phase = 0;
   let radius = 0;
   let pitch = 0;
-  let gap = 0;
+  let cardWidth = 0;
   let frame = null;
   let lastTime = 0;
   let visible = false;
@@ -422,34 +453,38 @@
   let paused = false;
   let drag = null;
 
-  for (let index = 0; index < count; index += 1) {
-    const source = usable[index % usable.length];
+  function setSource(card, serial) {
+    const index = ((serial % usable.length) + usable.length) % usable.length;
+    if (Number(card.dataset.sourceIndex) === index && card.hasAttribute("data-source-index")) return;
+    const source = usable[index];
+    const image = source.querySelector("img").cloneNode(true);
+    image.removeAttribute("id");
+    image.loading = "eager";
+    image.decoding = "async";
+    image.fetchPriority = "low";
+    image.draggable = false;
+    const art = card.querySelector(".contact-preview-art");
+    art.classList.toggle("contact-preview-art--sprite", /\bproject-image-\d+\b/.test(image.className));
+    art.replaceChildren(image);
+    card.querySelector("figcaption").textContent = source.querySelector("figcaption")?.textContent || image.alt;
+    card.dataset.sourceIndex = String(index);
+  }
+
+  for (let index = 0; index < 12; index += 1) {
     const card = document.createElement("figure");
     card.className = "contact-orbit-card";
     if (index >= usable.length) card.setAttribute("aria-hidden", "true");
-
     const previewWindow = document.createElement("div");
     previewWindow.className = "contact-preview-window";
-    const image = source.querySelector("img").cloneNode(true);
-    image.removeAttribute("id");
-    image.loading = "lazy";
-    image.draggable = false;
-    const artwork = document.createElement("div");
-    artwork.className = "contact-preview-art";
-    if (/\bproject-image-\d+\b/.test(image.className)) artwork.classList.add("contact-preview-art--sprite");
-    artwork.append(image);
-    previewWindow.append(artwork);
-    card.append(previewWindow);
-
-    const sourceCaption = source.querySelector("figcaption");
-    if (sourceCaption) {
-      const caption = document.createElement("figcaption");
-      caption.className = "visually-hidden";
-      caption.textContent = sourceCaption.textContent;
-      card.append(caption);
-    }
+    const art = document.createElement("div");
+    art.className = "contact-preview-art";
+    const caption = document.createElement("figcaption");
+    caption.className = "visually-hidden";
+    previewWindow.append(art);
+    card.append(previewWindow, caption);
     stage.append(card);
     cards.push(card);
+    setSource(card, index);
   }
 
   function signedAngle(angle) {
@@ -459,49 +494,65 @@
   function render() {
     const staticMode = reducedMotion.matches;
     orbit.toggleAttribute("data-static", staticMode);
-    const width = orbit.clientWidth;
-    const height = orbit.clientHeight;
-    const perspective = radius * 2.8;
-    const cardWidth = pitch - gap;
-    const cardHeight = cardWidth * 123 / 172;
-
     cards.forEach((card, index) => {
-      const angle = signedAngle(index * step - phase);
+      card.hidden = index >= slots;
+      if (card.hidden) return;
+      const raw = index * step - phase;
+      const angle = signedAngle(raw);
+      const cycle = Math.floor((raw + 180) / 360);
+      setSource(card, index - cycle * slots);
       if (staticMode) {
-        const slot = Math.round(angle / step);
-        card.style.setProperty("--static-x", `${-slot * pitch}px`);
+        card.style.setProperty("--static-x", `${-Math.round(angle / step) * pitch}px`);
         return;
       }
-
       const radians = angle * Math.PI / 180;
-      // Concave arc: its sides approach the viewer while the center stays at z=0.
       const x = -radius * Math.sin(radians);
       const z = radius * (1 - Math.cos(radians));
       const magnitude = Math.abs(angle);
-      // Project the corners before drawing. An edge card fades while it is still
-      // fully inside the scene, so neither the frame nor the artwork is cut off.
-      const corners = [-1, 1].map((side) => {
-        const dx = side * cardWidth / 2;
-        const scale = perspective / (perspective - z + dx * Math.sin(radians));
-        return { x: width * 0.507 + (x + dx * Math.cos(radians)) * scale, halfHeight: cardHeight / 2 * scale };
-      });
-      const clearance = Math.min(
-        ...corners.map((corner) => corner.x - 12),
-        ...corners.map((corner) => width - 12 - corner.x),
-        ...corners.map((corner) => height / 2 - 12 - corner.halfHeight),
-      );
       card.style.transform = `translate3d(${x}px, 0, ${z}px) rotateY(${angle}deg)`;
-      card.style.visibility = magnitude < 100 && clearance > 0 ? "visible" : "hidden";
-      card.style.opacity = String(Math.max(0, Math.min(1, clearance / 28)));
+      card.style.visibility = magnitude < 105 ? "visible" : "hidden";
+      card.style.opacity = String(Math.max(0, Math.min(1, (105 - magnitude) / 8)));
     });
   }
 
+  // Fit the entire front arc to the scene, instead of hiding cards early at its edges.
+  function projection(r) {
+    const perspective = r * 4;
+    let extent = 0;
+    let height = 0;
+    for (let angle = 0; angle <= 105; angle += 1) {
+      const radians = angle * Math.PI / 180;
+      const x = -r * Math.sin(radians);
+      const z = r * (1 - Math.cos(radians));
+      for (const side of [-1, 1]) {
+        const dx = side * cardWidth / 2;
+        const scale = perspective / (perspective - z + dx * Math.sin(radians));
+        extent = Math.max(extent, Math.abs((x + dx * Math.cos(radians)) * scale));
+        height = Math.max(height, cardWidth * 123 / 172 * scale);
+      }
+    }
+    return { extent, height };
+  }
+
   function measure() {
-    const width = parseFloat(getComputedStyle(cards[0]).width);
-    gap = parseFloat(getComputedStyle(stage).columnGap) || width * 20 / 172;
-    pitch = width + gap;
-    radius = pitch / (2 * Math.tan(Math.PI / count));
-    orbit.style.setProperty("--orbit-perspective", `${radius * 2.8}px`);
+    const width = orbit.clientWidth;
+    const available = parseFloat(getComputedStyle(orbit).getPropertyValue("--orbit-available-height")) || 400;
+    slots = width < 600 ? 6 : 12;
+    step = 360 / slots;
+    cardWidth = Math.min(420, width * (slots === 6 ? .30 : .16), (available - 26) / 1.95 * 172 / 123);
+    cardWidth = Math.max(64, Math.min(width - 32, cardWidth));
+    const gap = Math.max(12, width * .018);
+    pitch = cardWidth + gap;
+    let low = cardWidth * .4, high = width;
+    for (let iteration = 0; iteration < 24; iteration += 1) {
+      const candidate = (low + high) / 2;
+      if (projection(candidate).extent <= width / 2 - 14) low = candidate;
+      else high = candidate;
+    }
+    radius = low;
+    orbit.style.setProperty("--orbit-card-width", `${cardWidth}px`);
+    orbit.style.setProperty("--orbit-perspective", `${radius * 4}px`);
+    orbit.style.setProperty("--orbit-scene-height", `${Math.ceil(projection(radius).height + 28)}px`);
     if (pauseButton) pauseButton.hidden = reducedMotion.matches;
     const instructions = orbit.querySelector("#orbit-instructions");
     if (instructions) instructions.textContent = reducedMotion.matches
@@ -523,7 +574,7 @@
   function tick(time) {
     frame = null;
     if (!canMove()) { lastTime = 0; return; }
-    if (lastTime) phase = (phase + Math.min(time - lastTime, 60) * speed / 1000) % 360;
+    if (lastTime) phase += Math.min(time - lastTime, 60) * speed / 1000;
     lastTime = time;
     render();
     frame = window.requestAnimationFrame(tick);
@@ -602,6 +653,7 @@
     else stop();
   }).observe(orbit);
   new ResizeObserver(measure).observe(orbit);
+  window.addEventListener("raff:layout", measure);
   document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); else start(); });
   reducedMotion.addEventListener("change", () => { stop(); measure(); start(); });
 
@@ -615,7 +667,7 @@
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  // Body entrances stay separate from the owner's chosen hero parallax.
+  // Body entrances stay separate from the owner's cinematic hero sequence.
   document.querySelectorAll(".section-heading .section-title, .section-note, .projects-heading, .service-item, .project-card")
     .forEach((element, index) => {
       element.dataset.reveal = "";
@@ -773,6 +825,7 @@
     }
 
     function resetSelection() {
+      window.clearTimeout(resetTimer);
       const anchor = visibleSelectedItem();
       const before = anchor?.getBoundingClientRect().left;
       selectedId = null;
@@ -791,6 +844,7 @@
     function selectTool(button) {
       const chosen = button.closest(".tool-item");
       if (!chosen) return;
+      if (chosen.dataset.tool === selectedId) { resetSelection(); return; }
       window.clearTimeout(resetTimer);
       stop();
       const before = button.getBoundingClientRect().left;
