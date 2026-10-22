@@ -541,13 +541,15 @@ html[data-script1-ready] .hero-title-print {
 
 .services-hint {
   display: block;
-  margin-block-start: 12px;
+  margin: clamp(12px, 2svh, 20px) 0 0;
   color: rgb(246 241 248 / 75%);
   font-size: 0.75rem;
   font-weight: 400;
   line-height: 1.5;
+  text-align: center;
 }
 
+/* Heading position: smaller padding moves the title and right-hand note up. */
 .services-section,
 .tools-section {
   --screen-pad: clamp(16px, 2svh, 24px);
@@ -564,7 +566,7 @@ html[data-script1-ready] .hero-title-print {
 
 .services-section > .section-shell {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
 }
 
 .services-grid {
@@ -581,10 +583,6 @@ html[data-script1-ready] .hero-title-print {
   --service-lift: clamp(24px, 7svh, 60px);
   position: relative;
   min-inline-size: 0;
-}
-
-.service-item:nth-child(2) {
-  --service-lift: clamp(48px, 16svh, 184px);
 }
 
 .service-card {
@@ -1493,7 +1491,7 @@ html[data-reveal-ready] .timeline-item.is-visible::after {
   .section-heading { gap: 16px; }
   .section-note { flex-basis: 140px; max-inline-size: 140px; font-size: 0.75rem; }
   .services-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; max-inline-size: 520px; margin: 28px auto 0; padding: 0; }
-  .service-item, .service-item:nth-child(2) { --service-lift: 8px; }
+  .service-item { --service-lift: 8px; }
   .service-card { flex-direction: row; min-block-size: clamp(80px, 13svh, 120px); gap: 16px; padding: 12px 16px; font-size: 0.9375rem; }
   .service-icon { inline-size: clamp(36px, 6svh, 56px); flex: 0 0 auto; }
   .service-description { position: static; max-inline-size: 380px; margin: 8px auto 0; padding-inline: 12px; font-size: 0.875rem; }
