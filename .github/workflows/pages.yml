@@ -8,6 +8,9 @@ on:
       - assets/**
       - style/**
       - script/**
+      - preview/**
+      - package.json
+      - package-lock.json
       - .nojekyll
       - .github/workflows/pages.yml
   workflow_dispatch:
@@ -32,13 +35,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Build production CSS
+        run: |
+          npm ci
+          npm run check
+          npm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Assemble static site
         run: |
-          mkdir _site
+          mkdir -p _site/style
           cp index.html .nojekyll _site/
-          cp -R assets style script _site/
+          cp -R assets script preview _site/
+          cp style/syling.css _site/style/
+          cp -R style/fonts _site/style/
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

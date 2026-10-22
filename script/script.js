@@ -1,3 +1,11 @@
+// Track the real input source: browsers may keep :focus-visible after a touch.
+(() => {
+  const root = document.documentElement;
+  root.dataset.input = "pointer";
+  document.addEventListener("pointerdown", () => { root.dataset.input = "pointer"; }, true);
+  document.addEventListener("keydown", () => { root.dataset.input = "keyboard"; }, true);
+})();
+
 (() => {
   "use strict";
 
@@ -271,11 +279,11 @@
   let phase = 0;
   let radius = 0;
   let pitch = 0;
+  let gap = 0;
   let frame = null;
   let lastTime = 0;
   let visible = false;
-  let hovered = false;
-  let focused = false;
+  let keyHeld = false;
   let paused = false;
   let drag = null;
 
@@ -291,7 +299,11 @@
     image.removeAttribute("id");
     image.loading = "lazy";
     image.draggable = false;
-    previewWindow.append(image);
+    const artwork = document.createElement("div");
+    artwork.className = "contact-preview-art";
+    if (/\bproject-image-\d+\b/.test(image.className)) artwork.classList.add("contact-preview-art--sprite");
+    artwork.append(image);
+    previewWindow.append(artwork);
     card.append(previewWindow);
 
     const sourceCaption = source.querySelector("figcaption");
@@ -312,6 +324,11 @@
   function render() {
     const staticMode = reducedMotion.matches;
     orbit.toggleAttribute("data-static", staticMode);
+    const width = orbit.clientWidth;
+    const height = orbit.clientHeight;
+    const perspective = radius * 2.8;
+    const cardWidth = pitch - gap;
+    const cardHeight = cardWidth * 123 / 172;
 
     cards.forEach((card, index) => {
       const angle = signedAngle(index * step - phase);
@@ -326,15 +343,27 @@
       const x = -radius * Math.sin(radians);
       const z = radius * (1 - Math.cos(radians));
       const magnitude = Math.abs(angle);
+      // Project the corners before drawing. An edge card fades while it is still
+      // fully inside the scene, so neither the frame nor the artwork is cut off.
+      const corners = [-1, 1].map((side) => {
+        const dx = side * cardWidth / 2;
+        const scale = perspective / (perspective - z + dx * Math.sin(radians));
+        return { x: width * 0.507 + (x + dx * Math.cos(radians)) * scale, halfHeight: cardHeight / 2 * scale };
+      });
+      const clearance = Math.min(
+        ...corners.map((corner) => corner.x - 12),
+        ...corners.map((corner) => width - 12 - corner.x),
+        ...corners.map((corner) => height / 2 - 12 - corner.halfHeight),
+      );
       card.style.transform = `translate3d(${x}px, 0, ${z}px) rotateY(${angle}deg)`;
-      card.style.visibility = magnitude < 118 ? "visible" : "hidden";
-      card.style.opacity = String(Math.max(0, Math.min(1, (118 - magnitude) / 10)));
+      card.style.visibility = magnitude < 100 && clearance > 0 ? "visible" : "hidden";
+      card.style.opacity = String(Math.max(0, Math.min(1, clearance / 28)));
     });
   }
 
   function measure() {
     const width = parseFloat(getComputedStyle(cards[0]).width);
-    const gap = parseFloat(getComputedStyle(stage).columnGap) || width * 20 / 172;
+    gap = parseFloat(getComputedStyle(stage).columnGap) || width * 20 / 172;
     pitch = width + gap;
     radius = pitch / (2 * Math.tan(Math.PI / count));
     orbit.style.setProperty("--orbit-perspective", `${radius * 2.8}px`);
@@ -342,12 +371,12 @@
     const instructions = orbit.querySelector("#orbit-instructions");
     if (instructions) instructions.textContent = reducedMotion.matches
       ? "Static project previews. Use the left and right arrow keys to explore."
-      : "Project previews rotate from left to right. Hover or focus to pause. Use the left and right arrow keys to explore, or Space to pause and resume.";
+      : "Project previews rotate from left to right. Hold and drag to explore; release to resume. Use the arrow keys to explore, or Space to pause and resume.";
     render();
   }
 
   function canMove() {
-    return visible && !document.hidden && !reducedMotion.matches && !hovered && !focused && !paused && !drag;
+    return visible && !document.hidden && !reducedMotion.matches && !keyHeld && !paused && !drag;
   }
 
   function stop() {
@@ -379,16 +408,9 @@
 
   pauseButton?.addEventListener("click", () => setPaused(!paused));
 
-  orbit.addEventListener("pointerenter", (event) => {
-    if (event.pointerType === "mouse") { hovered = true; stop(); }
-  });
-  orbit.addEventListener("pointerleave", () => { hovered = false; start(); });
-  orbit.addEventListener("focusin", () => { focused = true; stop(); });
   orbit.addEventListener("focusout", () => {
-    window.requestAnimationFrame(() => {
-      focused = orbit.contains(document.activeElement);
-      start();
-    });
+    keyHeld = false;
+    start();
   });
 
   orbit.addEventListener("keydown", (event) => {
@@ -398,10 +420,16 @@
       setPaused(!paused);
     } else if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
       event.preventDefault();
+      keyHeld = true;
       stop();
       phase += event.key === "ArrowRight" ? step : -step;
       render();
     }
+  });
+  orbit.addEventListener("keyup", (event) => {
+    if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+    keyHeld = false;
+    start();
   });
 
   orbit.addEventListener("pointerdown", (event) => {
@@ -419,13 +447,19 @@
 
   function endDrag(event) {
     if (!drag || drag.id !== event.pointerId) return;
-    if (orbit.hasPointerCapture(event.pointerId)) orbit.releasePointerCapture(event.pointerId);
     drag = null;
     orbit.removeAttribute("data-dragging");
+    if (orbit.hasPointerCapture(event.pointerId)) orbit.releasePointerCapture(event.pointerId);
     start();
   }
   orbit.addEventListener("pointerup", endDrag);
   orbit.addEventListener("pointercancel", endDrag);
+  orbit.addEventListener("lostpointercapture", endDrag);
+  window.addEventListener("blur", () => {
+    if (drag) endDrag({ pointerId: drag.id });
+    keyHeld = false;
+    start();
+  });
 
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
@@ -445,6 +479,13 @@
   "use strict";
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  // Body-only entrances: the owner chooses the hero animation in a separate demo.
+  document.querySelectorAll(".section-heading .section-title, .section-note, .projects-heading, .service-item, .project-card")
+    .forEach((element, index) => {
+      element.dataset.reveal = "";
+      element.style.setProperty("--reveal-delay", `${(index % 3) * 70}ms`);
+    });
 
   // Services: a single expanded description, with the lifted glass card above it.
   const services = document.querySelector("[data-services]");
@@ -478,6 +519,9 @@
     if (!selected || !filters.contains(selected)) return;
     const category = selected.dataset.filter;
     let visible = 0;
+    if (!reducedMotion.matches) selected.animate([
+      { transform: "scale(.94)" }, { transform: "scale(1.06)" }, { transform: "scale(1)" },
+    ], { duration: 340, easing: "ease-out" });
 
     for (const button of filters.querySelectorAll("[data-filter]")) {
       button.setAttribute("aria-pressed", String(button === selected));
@@ -597,6 +641,7 @@
       const anchor = visibleSelectedItem();
       const before = anchor?.getBoundingClientRect().left;
       selectedId = null;
+      keyboardPaused = false;
       for (const item of track.querySelectorAll(".tool-item")) {
         item.querySelector("button").setAttribute("aria-pressed", "false");
         item.querySelector(".tool-name").hidden = true;
@@ -615,6 +660,7 @@
       stop();
       const before = button.getBoundingClientRect().left;
       selectedId = chosen.dataset.tool;
+      keyboardPaused = false;
 
       for (const item of track.querySelectorAll(".tool-item")) {
         const active = item.dataset.tool === selectedId;
@@ -627,6 +673,11 @@
       measure();
       keepVisible(visibleSelectedItem());
       if (status) status.textContent = `${button.getAttribute("aria-label")}. Carousel paused for ${pauseDuration / 1000} seconds.`;
+      if (!reducedMotion.matches) button.querySelector("img")?.animate([
+        { transform: "scale(.85) rotate(-7deg)" },
+        { transform: "scale(1.1) rotate(3deg)", offset: 0.65 },
+        { transform: "scale(1) rotate(0)" },
+      ], { duration: 540, easing: "ease-out" });
       resetTimer = window.setTimeout(resetSelection, pauseDuration);
     }
 
@@ -637,16 +688,22 @@
 
     marquee.addEventListener("focusin", (event) => {
       const button = event.target.closest(".tool-button");
-      keyboardPaused = Boolean(button?.matches(":focus-visible"));
+      keyboardPaused = document.documentElement.dataset.input === "keyboard" && Boolean(button?.matches(":focus-visible"));
       if (keyboardPaused) { stop(); keepVisible(button); }
     });
 
     marquee.addEventListener("focusout", () => {
       window.requestAnimationFrame(() => {
-        keyboardPaused = marquee.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
+        keyboardPaused = document.documentElement.dataset.input === "keyboard"
+          && marquee.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
         start();
       });
     });
+
+    marquee.addEventListener("pointerdown", () => {
+      keyboardPaused = false;
+      start();
+    }, { passive: true });
 
     marquee.addEventListener("keydown", (event) => {
       const button = event.target.closest(".tool-button");
@@ -688,6 +745,26 @@
   }
 
   initializeTools();
+
+  // Small pointer tilts add depth without moving the layout or affecting touch.
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  for (const card of document.querySelectorAll(".service-card, .project-frame")) {
+    let pending;
+    card.addEventListener("pointermove", (event) => {
+      if (event.pointerType !== "mouse" || !finePointer.matches || reducedMotion.matches) return;
+      window.cancelAnimationFrame(pending);
+      pending = window.requestAnimationFrame(() => {
+        const bounds = card.getBoundingClientRect();
+        card.style.setProperty("--tilt-x", `${((event.clientX - bounds.left) / bounds.width - 0.5) * 7}deg`);
+        card.style.setProperty("--tilt-y", `${-((event.clientY - bounds.top) / bounds.height - 0.5) * 7}deg`);
+      });
+    }, { passive: true });
+    card.addEventListener("pointerleave", () => {
+      window.cancelAnimationFrame(pending);
+      card.style.setProperty("--tilt-x", "0deg");
+      card.style.setProperty("--tilt-y", "0deg");
+    });
+  }
 
   // Career reveals run once, with a restrained line-drawing motion in brand red.
   const revealItems = document.querySelectorAll("[data-reveal]");

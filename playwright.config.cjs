@@ -1,0 +1,25 @@
+const { defineConfig } = require('@playwright/test');
+const { existsSync } = require('node:fs');
+
+module.exports = defineConfig({
+  testDir: './tests',
+  testMatch: '**/*.spec.cjs',
+  timeout: 60000,
+  workers: 2,
+  use: {
+    baseURL: 'http://127.0.0.1:8003',
+    viewport: { width: 1440, height: 800 },
+    launchOptions: {
+      executablePath: process.env.CHROMIUM_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),
+      args: ['--no-sandbox'],
+    },
+    screenshot: 'only-on-failure',
+  },
+  webServer: {
+    command: 'python3 -m http.server 8003 --bind 127.0.0.1',
+    url: 'http://127.0.0.1:8003',
+    reuseExistingServer: false,
+    stdout: 'ignore',
+    stderr: 'ignore',
+  },
+});

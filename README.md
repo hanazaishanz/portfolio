@@ -1,6 +1,6 @@
 # raff.co — Naufal Rafi
 
-Portfolio statis satu halaman, tanpa dependency atau proses build. Desain dan catatan ukuran ada di [DESIGN.md](DESIGN.md).
+Portfolio statis satu halaman. CSS produksi dibangun dengan Tailwind CSS; browser tidak memuat Tailwind CDN atau framework JavaScript. Desain dan catatan ukuran ada di [DESIGN.md](DESIGN.md).
 
 ## Preview lokal
 
@@ -11,6 +11,30 @@ python3 -m http.server 8000
 ```
 
 Buka <http://localhost:8000>. Struktur utama: `index.html`, `style/syling.css`, `script/script.js`.
+
+## Mengembangkan CSS dan menjalankan pemeriksaan
+
+CSS hasil build sudah disimpan sehingga preview statis langsung berjalan. Untuk mengubahnya, gunakan Node.js 24:
+
+```sh
+npm ci
+npm run dev
+```
+
+Edit **`style/input.css`**, yang berisi token empat warna, font lokal, komponen, dan utility Tailwind. Jangan mengedit `style/syling.css` secara langsung karena akan ditimpa saat build. Gunakan `npm run build` untuk CSS produksi minified dan `npm run check` untuk pemeriksaan sintaks JavaScript.
+
+Tes regresi interaksi dan responsivitas menggunakan Playwright:
+
+```sh
+npx playwright install chromium
+npm test
+```
+
+Jika Chromium sudah terpasang di `/usr/bin/chromium`, tes langsung memakainya. Lokasi browser lain dapat diberikan lewat `CHROMIUM_PATH`. Tes mencakup resume tools setelah Enter/touch, hold/drag/release CTA, bingkai utuh, satu viewport per section, filter, layout dengan teks 200%, dan preview hero. Server tes dijalankan otomatis dengan Python 3.
+
+## Memilih animasi hero
+
+Buka [preview hero](preview/hero.html) melalui server lokal, atau <https://hanazaishanz.github.io/portfolio/preview/hero.html> setelah publikasi. Tiga tombol membandingkan **parallax halus**, **pop-in playful**, dan **reveal elegan**; tombol putar ulang mengulangi entrance. Demo memakai iframe situs yang sama, sehingga tampilannya mengikuti CSS aktual. Hero utama tetap statis sampai pemilik memilih animasi.
 
 ## Mengganti konten
 
@@ -24,7 +48,7 @@ Preview proyek dan sebagian logo merupakan aset sementara yang dapat diganti pem
 
 ## GitHub Pages
 
-Workflow `.github/workflows/pages.yml` memublikasikan file situs dari `main` menggunakan Actions resmi GitHub; dokumentasi dan file Git tidak ikut diunggah sebagai artefak situs.
+Workflow `.github/workflows/pages.yml` memasang dependency terkunci dengan `npm ci`, memeriksa sintaks, membangun CSS Tailwind, lalu memublikasikan situs dan preview hero dari `main` menggunakan Actions resmi GitHub. Dependency Node, tes, dokumentasi, dan file Git tidak ikut diunggah sebagai artefak situs.
 
 Jika Pages belum aktif, buka **Settings → Pages → Build and deployment → Source → GitHub Actions**, lalu jalankan **Actions → Deploy portfolio to GitHub Pages → Run workflow**. Push perubahan situs ke `main` akan memicu deployment berikutnya.
 

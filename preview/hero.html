@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Pilihan animasi hero — raff.co</title>
+    <style>
+      @font-face { font-family: Jakarta; src: url('../style/fonts/plus-jakarta-sans-latin-wght-normal.woff2'); font-weight: 200 800; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #181515; color: #F6F1F8; font: 400 14px/1.5 Jakarta, sans-serif; }
+      .preview-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; }
+      button { min-height: 40px; padding: 8px 14px; border: 1px solid #AAA095; border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+      button[aria-pressed="true"] { background: #8F0000; border-color: #8F0000; }
+      button:focus-visible { outline: 2px solid #F6F1F8; outline-offset: 3px; }
+      iframe { display: block; width: 100%; height: calc(100svh - 116px); min-height: 520px; border: 0; }
+      p { margin: 0; padding: 10px 20px; text-align: center; color: #AAA095; }
+      @media(max-width: 600px) { iframe { height: calc(100svh - 156px); } }
+    </style>
+    <script src="./hero.js" defer></script>
+  </head>
+  <body>
+    <nav class="preview-controls" aria-label="Pilih preview animasi hero">
+      <button type="button" data-mode="parallax" aria-pressed="true">1. Parallax halus</button>
+      <button type="button" data-mode="playful" aria-pressed="false">2. Pop-in playful</button>
+      <button type="button" data-mode="reveal" aria-pressed="false">3. Reveal elegan</button>
+      <button type="button" data-replay>↻ putar ulang</button>
+    </nav>
+    <iframe src="../index.html" title="Preview hero raff.co" id="hero-preview"></iframe>
+    <p id="preview-caption">Gerakkan kursor di atas hero untuk melihat efek kedalaman. Ini demo; hero utama belum diberi animasi.</p>
+  </body>
+</html>

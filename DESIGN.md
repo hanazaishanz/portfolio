@@ -2,6 +2,21 @@
 
 Instruksi ini berasal dari pemilik desain dan berlaku untuk pengembangan website ini berikutnya.
 
+## Revisi responsivitas dan animasi
+
+Permintaan terbaru pemilik memperbarui ukuran tetap pada implementasi awal:
+
+- Hero, Services, Recent Projects, Tools, dan Work Experience mengisi **satu tinggi viewport setelah navbar**. Kartu dihitung dari **lebar dan tinggi layar**; kanvas referensi 800 px tidak menjadi tinggi tetap. CTA dan footer mempertahankan proporsi desainnya. Pada layar sangat pendek atau pembesaran teks, section boleh memanjang agar konten tetap terbaca tanpa dipotong.
+- Grid Recent Projects: tiga kolom × dua baris di tablet/desktop, dua kolom × tiga baris di HP. Tinggi dan lebar kartu mengikuti ruang yang tersedia; perubahan filter mempertahankan posisi heading dan ruang grid.
+- Work Experience dipusatkan horizontal dan vertikal. Pada HP, heading di atas, lalu timeline dan foto berdampingan agar tetap muat dalam satu section.
+- Hilangkan shadow bawah hero dan inset shadow Services yang membuat bidang merah di sudut terlihat dibatasi kotak. Warna body tetap merah utama.
+- Tools kembali merah dan berjalan lagi **4000 ms setelah aktivasi**, termasuk ketika tombol asli masih fokus setelah klik, touch, atau Enter. Fokus keyboard ketika menjelajah tetap bisa menghentikan sementara; fokus yang tertinggal setelah aktivasi tidak mengunci autoplay.
+- CTA berhenti **selama ditahan/digeser**, lalu langsung lanjut saat pointer dilepas, dibatalkan, atau capture berakhir. Hover dan fokus yang tertinggal tidak menghentikan autoplay. Panah keyboard berhenti selama ditekan dan lanjut saat dilepas; Space/tombol pause tetap memberikan jeda manual.
+- Kartu CTA diproyeksikan sebelum ditampilkan: fade selesai sebelum sisi kartu melewati batas scene, sehingga bingkai tidak terlihat terpotong. Artwork sprite tetap persegi dan gambar kustom memakai `object-fit: contain` agar tampil utuh.
+- Animasi body lebih playful: entrance bertahap, tilt kecil mengikuti pointer pada kartu, pop saat mengganti filter, dan bounce ikon services/tools. Hormati reduced motion; tidak ada gerakan pointer pada perangkat touch.
+- **Hero utama belum diberi animasi baru sebelum pemilik memilih.** Tiga demo terpisah tersedia di `preview/hero.html`: parallax halus, pop-in playful, dan reveal elegan. Demo tidak mengubah animasi hero utama dan ditandai `noindex`.
+- CSS memakai **Tailwind CSS hasil build lokal**. Edit `style/input.css` untuk token desain dan komponen; `npm run build` menghasilkan `style/syling.css`. Jangan memakai Tailwind CDN/runtime. Struktur tiga berkas utama tetap sama.
+
 ## Palet wajib
 
 | Peran | Warna |
@@ -55,7 +70,7 @@ Ukuran berikut adalah perkiraan proporsi screenshot desktop, disetarakan dengan 
 - Semua permukaan mengikuti empat warna dasar. Foto dan ikon aplikasi mempertahankan warna aslinya.
 - Services: satu deskripsi aktif pada satu waktu; website development terbuka di awal sesuai referensi. Klik kartu mengangkatnya dan menampilkan deskripsi di bawah; klik lagi menutup. Di mobile cards ditumpuk agar penjelasan tidak bertabrakan.
 - Recent Projects: semua bingkai melengkung, `#F6F1F8` dengan inner shadow. All aktif di awal; tombol aktif merah dengan inner shadow, tombol lain terang dengan drop shadow. Filter UI, website, photography benar-benar menyaring kartu, bukan sekadar mengganti warna tombol.
-- Tools: bergerak kontinu dari kanan ke kiri. Klik kartu membuatnya putih dengan inner shadow, menampilkan nama di samping, dan menghentikan loop **4000 ms**. Setelah itu kartu kembali merah, nama disembunyikan, dan loop dilanjutkan. Seleksi tool baru memulai ulang timer. Tombol keyboard tetap menghentikan pergerakan selama fokus agar dapat dipakai dengan nyaman. Reduced motion menampilkan daftar statis.
+- Tools: bergerak kontinu dari kanan ke kiri. Klik kartu membuatnya putih dengan inner shadow, menampilkan nama di samping, dan menghentikan loop **4000 ms**. Setelah itu kartu kembali merah, nama disembunyikan, dan loop dilanjutkan. Seleksi tool baru memulai ulang timer. Fokus keyboard menghentikan saat menjelajah; aktivasi dan reset selection tidak meninggalkan pause yang terkunci. Reduced motion menampilkan daftar statis.
 - Work Experience: animasi reveal sekali saat terlihat, disertai garis merah yang tumbuh. Teks karier memakai jawaban asli pemilik desain. Foto kanan sementara memakai foto SVG pemilik yang sudah tersedia; versi foto memegang kamera pada referensi belum tersedia sebagai file.
 
 ### Mengganti isi showcase
@@ -73,7 +88,7 @@ Ukuran berikut adalah perkiraan proporsi screenshot desktop, disetarakan dengan 
 - Radius dihitung dari `(cardWidth + gap) / (2 * tan(PI / slotCount))`. Perspective sekitar **2.8 × radius**. Slot minimal delapan; proyek yang tersedia diulang bila belum cukup. Kartu bergerak dari **kiri ke kanan**, kembali melalui sisi belakang yang disembunyikan.
 - Preview diambil otomatis dari semua `.project-card`, termasuk gambar, crop sprite sementara, dan caption. Filter Recent Projects tidak menghapus item carousel.
 - Untuk sertifikasi, tambah `<figure><img src="..." alt="..."><figcaption>...</figcaption></figure>` ke `<template id="contact-custom-previews">`. Gunakan `data-preview-source="custom"` pada `[data-contact-orbit]` untuk sertifikasi saja, atau `mixed` untuk gabungan proyek + sertifikasi. `projects` adalah default. Kecepatan putaran diatur melalui `data-orbit-speed="4.5"` dalam derajat/detik.
-- Hover/fokus menghentikan gerakan agar preview dapat dilihat. Geser horizontal atau pakai tombol panah untuk menjelajah; Space dan tombol pause yang terlihat saat fokus keyboard mengontrol jeda. Reduced motion menampilkan preview statis dengan navigasi manual.
+- Tahan dan geser horizontal, atau tahan panah keyboard, untuk menjelajah; lepaskan untuk melanjutkan putaran. Space dan tombol pause yang terlihat saat fokus keyboard mengontrol jeda manual. Reduced motion menampilkan preview statis dengan navigasi manual.
 - Kartu CTA memakai glassmorphism; tombol Instagram, Gmail, LinkedIn memakai merah yang sama dengan background, drop shadow timbul, dan ikon terang.
 - Pemilik mengizinkan **link sementara yang akan diisi sendiri nanti**. Instagram, WhatsApp, dan LinkedIn menuju homepage layanan masing-masing; email memakai alamat pada referensi melalui `mailto:`. Jangan menganggap placeholder homepage sebagai profil yang sudah diverifikasi.
 - Tidak ada pesan yang dikirim otomatis; link Gmail hanya membuka aplikasi email.
