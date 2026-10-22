@@ -210,17 +210,23 @@ test('custom certificate images remain whole and mobile touch dragging resumes a
   await context.close();
 });
 
-test('all three hero demos animate separately while the main hero remains static', async ({ page }) => {
+test('all three hero demos remain independent of the chosen main animation', async ({ page }) => {
   const errors=[];page.on('pageerror',(e)=>errors.push(e.message));
   await ready(page);
-  expect(await page.locator('.hero').evaluate((e)=>e.getAnimations({subtree:true}).length)).toBe(0);
+  await expect(page.locator('.hero')).toHaveAttribute('data-hero-motion','parallax');
+  await expect(page.locator('.hero')).toHaveAttribute('data-motion-ready','true');
   await page.goto('/preview/hero.html');
   await expect(page.frameLocator('#hero-preview').locator('.hero')).toBeVisible();
   await page.waitForTimeout(300);
+  await expect(page.frameLocator('#hero-preview').locator('.hero')).not.toHaveAttribute('data-motion-ready','true');
   for(const mode of ['parallax','playful','reveal']) {
     await page.locator(`[data-mode="${mode}"]`).click();
     await expect(page.locator(`[data-mode="${mode}"]`)).toHaveAttribute('aria-pressed','true');
     expect(await page.frameLocator('#hero-preview').locator('.hero').evaluate((e)=>e.getAnimations({subtree:true}).length)).toBeGreaterThan(0);
+    if(mode!=='parallax') {
+      await page.waitForTimeout(100);
+      expect(await page.frameLocator('#hero-preview').locator('.hero-portrait-art').evaluate(e=>e.style.transform)).toBe('');
+    }
   }
   expect(errors).toEqual([]);
 });

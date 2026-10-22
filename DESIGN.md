@@ -14,7 +14,7 @@ Permintaan terbaru pemilik memperbarui ukuran tetap pada implementasi awal:
 - CTA berhenti **selama ditahan/digeser**, lalu langsung lanjut saat pointer dilepas, dibatalkan, atau capture berakhir. Hover dan fokus yang tertinggal tidak menghentikan autoplay. Panah keyboard berhenti selama ditekan dan lanjut saat dilepas; Space/tombol pause tetap memberikan jeda manual.
 - Kartu CTA diproyeksikan sebelum ditampilkan: fade selesai sebelum sisi kartu melewati batas scene, sehingga bingkai tidak terlihat terpotong. Artwork sprite tetap persegi dan gambar kustom memakai `object-fit: contain` agar tampil utuh.
 - Animasi body lebih playful: entrance bertahap, tilt kecil mengikuti pointer pada kartu, pop saat mengganti filter, dan bounce ikon services/tools. Hormati reduced motion; tidak ada gerakan pointer pada perangkat touch.
-- **Hero utama belum diberi animasi baru sebelum pemilik memilih.** Tiga demo terpisah tersedia di `preview/hero.html`: parallax halus, pop-in playful, dan reveal elegan. Demo tidak mengubah animasi hero utama dan ditandai `noindex`.
+- **Pemilik memilih parallax halus untuk hero utama.** Foto dan lingkaran dekorasi mengikuti kursor dengan kedalaman berbeda, disertai entrance bertahap BETTER → CALL → Rafi, paragraf, dan tombol. Posisi akhir mengikuti layout statis. Foto dibatasi agar sisi bawahnya tidak meninggalkan celah. Entrance berjalan sekali; pada touch hanya entrance, tanpa mengikuti jari. Reduced motion menampilkan hero statis. Gerakan berhenti saat stabil, hero keluar viewport, atau tab tidak terlihat, dan kembali netral saat pointer keluar/resize. Tiga demo terpisah tetap tersedia di `preview/hero.html`, menggunakan iframe beratribut `data-hero-demo` agar animasi demo tidak bertabrakan dengan animasi produksi. Halaman demo ditandai `noindex`.
 - CSS memakai **Tailwind CSS hasil build lokal**. Edit `style/input.css` untuk token desain dan komponen; `npm run build` menghasilkan `style/syling.css`. Jangan memakai Tailwind CDN/runtime. Struktur tiga berkas utama tetap sama.
 
 ## Palet wajib
@@ -76,7 +76,7 @@ Ukuran berikut adalah perkiraan proporsi screenshot desktop, disetarakan dengan 
 ### Mengganti isi showcase
 
 1. Di `index.html`, cari `.project-card`. Ubah `data-category` menjadi `ui`, `web`, atau `photo`; bisa beberapa kategori dipisah spasi.
-2. Ganti `src`, `alt`, dan figcaption untuk proyek asli. **Hapus class bernomor `project-image-1` sampai `project-image-6`** saat mengganti sprite sementara dengan foto tunggal. Sisakan `class="project-image"`; gambar akan memakai `object-fit: cover`.
+2. Ganti `src`, `alt`, dan figcaption untuk proyek asli. **Hapus class bernomor `project-image-1` sampai `project-image-6`** saat mengganti sprite sementara dengan foto tunggal. Sisakan `class="project-image"`; gambar akan memakai `object-fit: contain` agar tampil utuh.
 3. Enam preview sementara memakai satu gambar buatan `assets/projects/project-previews.png`, diposisikan dengan CSS. Gambar ini bukan klaim karya asli pemilik.
 4. Tools dikustomisasi di `.tool-group` pada `index.html`: tambah/hapus `.tool-item`, lalu ubah `data-tool` yang unik, `src` ikon, `aria-label` tombol, dan teks `.tool-name`. Salinan loop dibuat otomatis; tidak perlu diedit.
 5. Durasi jeda tools diatur melalui `data-pause-duration="4000"`; kecepatan opsional melalui `data-speed="36"` (px per detik) pada `[data-tools]`.

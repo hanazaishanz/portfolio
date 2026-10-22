@@ -257,6 +257,141 @@
 (() => {
   "use strict";
 
+  const hero = document.querySelector('[data-hero-motion="parallax"]');
+  // The comparison page owns its iframe animation, including the other options.
+  if (!hero || window.frameElement?.hasAttribute("data-hero-demo")) return;
+
+  const art = hero.querySelector(".hero-portrait-art");
+  const decoration = hero.querySelector(".hero-orbit");
+  const portrait = hero.querySelector(".hero-photo");
+  if (!art || !decoration) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  const entrances = new Set();
+  let ready = false;
+  let visible = false;
+  let entered = false;
+  let frame = null;
+  let lastTime = 0;
+  let targetX = 0;
+  let targetY = 0;
+  let x = 0;
+  let y = 0;
+
+  function finishEntrances() {
+    for (const animation of entrances) animation.cancel();
+    entrances.clear();
+  }
+
+  function enter() {
+    if (!ready || !visible || document.hidden || entered) return;
+    entered = true;
+    if (reducedMotion.matches) return;
+
+    const elements = [
+      [".hero-portrait", 1000, 60],
+      [".hero-title-better", 700, 180],
+      [".hero-title-call", 700, 280],
+      [".hero-title-name", 850, 400],
+      [".hero-description", 800, 650],
+      [".artwork-link", 750, 850],
+    ];
+    for (const [selector, duration, delay] of elements) {
+      const element = hero.querySelector(selector);
+      if (!element?.animate) continue;
+      const animation = element.animate([
+        { opacity: 0, transform: "translateY(24px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ], { duration, delay, easing: "cubic-bezier(.2,.8,.25,1)", fill: "backwards" });
+      entrances.add(animation);
+      animation.onfinish = () => entrances.delete(animation);
+    }
+  }
+
+  function reset() {
+    if (frame !== null) window.cancelAnimationFrame(frame);
+    frame = null;
+    lastTime = 0;
+    targetX = targetY = x = y = 0;
+    art.style.removeProperty("transform");
+    decoration.style.removeProperty("transform");
+  }
+
+  function canMove() {
+    return ready && visible && !document.hidden && !reducedMotion.matches && finePointer.matches;
+  }
+
+  function tick(time) {
+    frame = null;
+    if (!canMove()) { reset(); return; }
+    // Keep the same damping on 60Hz and high-refresh displays; stop when settled.
+    const elapsed = lastTime ? Math.min(time - lastTime, 64) : 1000 / 60;
+    const damping = 1 - Math.pow(0.91, elapsed / (1000 / 60));
+    x += (targetX - x) * damping;
+    y += (targetY - y) * damping;
+    const settled = Math.abs(targetX - x) + Math.abs(targetY - y) < 0.002;
+    if (settled) { x = targetX; y = targetY; }
+
+    if (settled && x === 0 && y === 0) {
+      reset();
+      return;
+    }
+    // Keep the portrait's bottom edge covered as it moves inside the hero panel.
+    art.style.transform = `translate3d(${x * 7}px,${Math.max(0, y * 5)}px,0)`;
+    decoration.style.transform = `translate3d(${-x * 14}px,${-y * 11}px,0)`;
+    lastTime = time;
+    if (!settled) frame = window.requestAnimationFrame(tick);
+    else lastTime = 0;
+  }
+
+  function move() {
+    if (frame === null && canMove()) frame = window.requestAnimationFrame(tick);
+  }
+
+  hero.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse" || !canMove()) return;
+    const bounds = hero.getBoundingClientRect();
+    targetX = Math.max(-1, Math.min(1, (event.clientX - bounds.left) / bounds.width * 2 - 1));
+    targetY = Math.max(-1, Math.min(1, (event.clientY - bounds.top) / bounds.height * 2 - 1));
+    move();
+  }, { passive: true });
+  hero.addEventListener("pointerleave", () => { targetX = targetY = 0; move(); });
+  hero.addEventListener("focusin", () => {
+    entered = true;
+    finishEntrances();
+  });
+  window.addEventListener("resize", reset, { passive: true });
+  window.addEventListener("blur", reset);
+
+  new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    if (visible) enter();
+    else { reset(); finishEntrances(); }
+  }).observe(hero);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { reset(); finishEntrances(); }
+    else enter();
+  });
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) { reset(); entered = true; finishEntrances(); }
+  });
+  finePointer.addEventListener("change", () => { if (!finePointer.matches) reset(); });
+
+  // Content stays visible by default, even without JS or while an asset loads.
+  Promise.allSettled([
+    document.fonts?.ready,
+    portrait?.decode?.(),
+  ]).then(() => {
+    ready = true;
+    hero.dataset.motionReady = "true";
+    enter();
+  });
+})();
+
+(() => {
+  "use strict";
+
   const orbit = document.querySelector("[data-contact-orbit]");
   const stage = orbit?.querySelector("[data-orbit-stage]");
   if (!orbit || !stage) return;
@@ -480,7 +615,7 @@
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  // Body-only entrances: the owner chooses the hero animation in a separate demo.
+  // Body entrances stay separate from the owner's chosen hero parallax.
   document.querySelectorAll(".section-heading .section-title, .section-note, .projects-heading, .service-item, .project-card")
     .forEach((element, index) => {
       element.dataset.reveal = "";

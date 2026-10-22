@@ -30,11 +30,11 @@ npx playwright install chromium
 npm test
 ```
 
-Jika Chromium sudah terpasang di `/usr/bin/chromium`, tes langsung memakainya. Lokasi browser lain dapat diberikan lewat `CHROMIUM_PATH`. Tes mencakup resume tools setelah Enter/touch, hold/drag/release CTA, bingkai utuh, satu viewport per section, filter, layout dengan teks 200%, dan preview hero. Server tes dijalankan otomatis dengan Python 3.
+Jika Chromium sudah terpasang di `/usr/bin/chromium`, tes langsung memakainya. Lokasi browser lain dapat diberikan lewat `CHROMIUM_PATH`. Tes mencakup resume tools setelah Enter/touch, hold/drag/release CTA, bingkai utuh, satu viewport per section, filter, layout dengan teks 200%, parallax hero beserta reduced motion, dan preview hero. Server tes dijalankan otomatis dengan Python 3.
 
 ## Memilih animasi hero
 
-Buka [preview hero](preview/hero.html) melalui server lokal, atau <https://hanazaishanz.github.io/portfolio/preview/hero.html> setelah publikasi. Tiga tombol membandingkan **parallax halus**, **pop-in playful**, dan **reveal elegan**; tombol putar ulang mengulangi entrance. Demo memakai iframe situs yang sama, sehingga tampilannya mengikuti CSS aktual. Hero utama tetap statis sampai pemilik memilih animasi.
+Buka [preview hero](preview/hero.html) melalui server lokal, atau <https://hanazaishanz.github.io/portfolio/preview/hero.html>. Pemilik sudah memilih **parallax halus**, yang diterapkan pada hero utama. Di desktop, foto dan lingkaran mengikuti kursor secara halus; di HP hanya entrance bertahap. Efek menghormati reduced motion dan tidak terus berjalan saat sudah stabil atau hero tidak terlihat. Tiga tombol demo tetap membandingkan **parallax halus**, **pop-in playful**, dan **reveal elegan**; tombol putar ulang mengulangi entrance. Iframe demo menjalankan animasinya sendiri tanpa menggandakan animasi produksi.
 
 ## Mengganti konten
 

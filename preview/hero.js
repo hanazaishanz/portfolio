@@ -48,7 +48,7 @@
       }, { signal });
       hero.addEventListener("pointerleave", () => { targetX = 0; targetY = 0; }, { signal });
       tick();
-      caption.textContent = "Gerakkan kursor di atas hero: foto dan lingkaran bergerak dengan kedalaman berbeda. Hero utama tetap statis sampai dipilih.";
+      caption.textContent = "Gerakkan kursor di atas hero: foto dan lingkaran bergerak dengan kedalaman berbeda. Parallax halus sudah diterapkan pada hero utama.";
     } else if (mode === "playful") {
       animate(".hero-portrait", [
         { opacity: 0, transform: "translateY(35px) scale(.88) rotate(-3deg)" },
