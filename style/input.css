@@ -539,17 +539,33 @@ html[data-script1-ready] .hero-title-print {
   text-align: right;
 }
 
+.services-hint {
+  display: block;
+  margin-block-start: 12px;
+  color: rgb(246 241 248 / 75%);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 .services-section {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  align-content: center;
+  align-content: stretch;
   min-block-size: var(--screen-height);
   padding-block: var(--screen-pad);
 }
 
-.services-grid {
+.services-section > .section-shell {
   display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.services-grid {
+  align-self: center;
+  display: grid;
+  inline-size: 100%;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(24px, 5vw, 80px);
   margin-block-start: clamp(48px, 8svh, 96px);
@@ -774,13 +790,15 @@ html[data-script1-ready] .hero-title-print {
 .tools-section {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  align-content: center;
+  grid-template-rows: auto 1fr;
+  align-content: stretch;
   gap: clamp(40px, 10svh, 100px);
   min-block-size: var(--screen-height);
   padding-block: var(--screen-pad);
 }
 
 .tools-marquee {
+  align-self: center;
   min-inline-size: 0;
   inline-size: 100%;
   --tool-size: clamp(96px, min(15vw, 28svh), 240px);
