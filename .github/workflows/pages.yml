@@ -8,6 +8,7 @@ on:
       - assets/**
       - style/**
       - script/**
+      - scripts/**
       - preview/**
       - package.json
       - package-lock.json

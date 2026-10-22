@@ -4,7 +4,7 @@
   "private": true,
   "description": "Naufal Rafi's responsive static portfolio",
   "scripts": {
-    "build": "tailwindcss -i ./style/input.css -o ./style/syling.css --minify",
+    "build": "tailwindcss -i ./style/input.css -o ./style/syling.css --minify && node scripts/version-css.cjs",
     "dev": "tailwindcss -i ./style/input.css -o ./style/syling.css --watch",
     "check": "node --check script/script.js && node --check preview/hero.js",
     "test": "playwright test"

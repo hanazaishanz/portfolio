@@ -21,7 +21,7 @@ npm ci
 npm run dev
 ```
 
-Edit **`style/input.css`**, yang berisi token empat warna, font lokal, komponen, dan utility Tailwind. Jangan mengedit `style/syling.css` secara langsung karena akan ditimpa saat build. Gunakan `npm run build` untuk CSS produksi minified dan `npm run check` untuk pemeriksaan sintaks JavaScript.
+Edit **`style/input.css`**, yang berisi token empat warna, font lokal, komponen, dan utility Tailwind. Jangan mengedit `style/syling.css` secara langsung karena akan ditimpa saat build. Gunakan `npm run build` untuk CSS produksi minified dan `npm run check` untuk pemeriksaan sintaks JavaScript. Build juga memperbarui versi URL stylesheet di `index.html` berdasarkan hash CSS agar update tidak tertahan cache browser; commit HTML dan CSS hasil build bersama.
 
 Tes regresi interaksi dan responsivitas menggunakan Playwright:
 

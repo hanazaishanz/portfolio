@@ -548,6 +548,11 @@ html[data-script1-ready] .hero-title-print {
   line-height: 1.5;
 }
 
+.services-section,
+.tools-section {
+  --screen-pad: clamp(16px, 2svh, 24px);
+}
+
 .services-section {
   position: relative;
   display: grid;
