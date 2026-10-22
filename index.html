@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#181515" />
+    <meta name="description" content="Naufal Rafi, freelancer di bidang UI design, website development, dan fotografi. Kenali Rafi dan jelajahi portfolio karyanya." />
+    <title>Naufal Rafi — UI Design, Web Development &amp; Photography</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="./style/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./style/fonts/dancing-script-variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./style/syling.css" />
+    <script src="./script/script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Langsung ke konten</a>
+
+    <header class="site-header" data-header>
+      <div class="navbar-container">
+        <a class="brand" href="#about" aria-label="raff.co — kembali ke bagian about">
+          <img src="./assets/logo.svg" alt="raff.co" width="119" height="36" fetchpriority="high" />
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Buka menu navigasi">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav class="primary-navigation" id="primary-navigation" aria-label="Navigasi utama">
+          <div class="nav-panel">
+            <span class="nav-indicator" aria-hidden="true"></span>
+            <ul class="nav-list" lang="en">
+              <li><a class="nav-link" href="#about" aria-current="location">about</a></li>
+              <li><a class="nav-link" href="#services">services</a></li>
+              <li><a class="nav-link" href="#portfolio" aria-label="Portfolio">porfolio</a></li>
+              <li><a class="nav-link" href="#contact">contact</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+      <section class="hero" id="about" aria-labelledby="about-title" tabindex="-1" lang="en">
+        <div class="hero-stage">
+          <span class="hero-orbit" aria-hidden="true"></span>
+
+          <figure class="hero-portrait">
+            <div class="hero-portrait-art">
+              <span class="hero-portrait-circle" aria-hidden="true"></span>
+              <img class="hero-photo" src="./assets/portrait.svg" alt="Naufal Rafi smiling and pointing toward the camera, in a black-and-white portrait." width="721" height="800" fetchpriority="high" decoding="async" />
+              <span class="hero-square" aria-hidden="true"></span>
+            </div>
+          </figure>
+
+          <div class="hero-copy">
+            <h1 class="hero-title" id="about-title" aria-label="Better call Rafi — Naufal Rafi">
+              <!-- SCRIPT1 needs its original font file before this lettering can be final. -->
+              <span class="hero-title-better hero-title-print" aria-hidden="true">BETTER</span>
+              <span class="hero-title-call hero-title-print" aria-hidden="true">CALL</span>
+              <span class="hero-title-name" aria-hidden="true"><span class="hero-letter hero-letter-r">R</span><span class="hero-letter hero-letter-a">a</span><span class="hero-letter hero-letter-f">f</span><span class="hero-letter hero-letter-i">i</span></span>
+            </h1>
+            <p class="hero-description">hello world! i’m Naufal Rafi, i work as freelancer, particularly in UI design, website development, and photography. i do your needs aesthetically to made an impactful art for your business</p>
+            <a class="artwork-link" href="#recent-projects" data-scroll-target>see my artwork</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="services-section" id="services" aria-labelledby="services-title" tabindex="-1" lang="en">
+        <div class="section-shell">
+          <div class="section-heading">
+            <h2 class="section-title" id="services-title">expertise &amp;<br />services</h2>
+            <p class="section-note">to make your needs<br />an impactful art</p>
+          </div>
+          <div class="services-grid" data-services>
+            <article class="service-item">
+              <button class="service-card" type="button" aria-expanded="false" aria-controls="service-ui-copy">
+                <svg class="service-icon" viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="13" width="82" height="55" rx="1"/><path d="M7 58h82M48 68v15M28 83h40"/></svg>
+                <span>UI design</span>
+              </button>
+              <p class="service-description" id="service-ui-copy" hidden>thoughtful interfaces that balance clarity, usability, and your brand’s character.</p>
+            </article>
+            <article class="service-item">
+              <button class="service-card" type="button" aria-expanded="true" aria-controls="service-web-copy">
+                <svg class="service-icon" viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="48" cy="48" r="39"/><ellipse cx="48" cy="48" rx="17" ry="39"/><path d="M12 32h72M9 48h78M12 64h72M48 9v78"/></svg>
+                <span>website development</span>
+              </button>
+              <p class="service-description" id="service-web-copy">responsive websites for your company, portfolio, or organization.</p>
+            </article>
+            <article class="service-item">
+              <button class="service-card" type="button" aria-expanded="false" aria-controls="service-photo-copy">
+                <svg class="service-icon" viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 28h18l7-10h26l7 10h18v54H10z"/><circle cx="48" cy="54" r="20"/><circle cx="48" cy="54" r="13"/><path d="M72 36h7M17 23h11"/></svg>
+                <span>photography</span>
+              </button>
+              <p class="service-description" id="service-photo-copy" hidden>portraits, products, and moments captured with an eye for light, detail, and your story.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="projects-section" id="portfolio" aria-label="Portfolio" tabindex="-1" lang="en">
+        <section class="recent-projects" id="recent-projects" aria-labelledby="portfolio-title" tabindex="-1">
+          <div class="section-shell">
+            <div class="projects-heading">
+              <h2 class="section-title" id="portfolio-title">recent<br />projects</h2>
+              <div class="project-filters" role="group" aria-label="Filter projects by category">
+                <button class="project-filter" type="button" data-filter="all" aria-pressed="true" aria-controls="project-grid">all</button>
+                <button class="project-filter" type="button" data-filter="ui" aria-pressed="false" aria-controls="project-grid">UI design</button>
+                <button class="project-filter" type="button" data-filter="web" aria-pressed="false" aria-controls="project-grid">website development</button>
+                <button class="project-filter" type="button" data-filter="photo" aria-pressed="false" aria-controls="project-grid">photography</button>
+              </div>
+            </div>
+            <p class="visually-hidden" role="status" aria-live="polite" data-project-status>Showing all 6 projects.</p>
+            <!-- Replace each image src/alt and data-category here with your own project.
+                 Categories: ui, web, photo. A card can have multiple space-separated categories.
+                 The current sprite uses 6 temporary custom images; see DESIGN.md. -->
+            <div class="project-grid" id="project-grid">
+              <figure class="project-card" data-category="ui">
+                <div class="project-frame"><div class="project-image-window"><img class="project-image project-image-1" src="./assets/projects/project-previews.png" alt="Temporary UI project preview: a burgundy and pale dashboard interface." width="1536" height="1024" loading="lazy" decoding="async" /></div></div>
+                <figcaption class="visually-hidden">UI design — dashboard concept. Temporary showcase image.</figcaption>
+              </figure>
+              <figure class="project-card" data-category="web">
+                <div class="project-frame"><div class="project-image-window"><img class="project-image project-image-2" src="./assets/projects/project-previews.png" alt="Temporary website project preview: a clean responsive site layout." width="1536" height="1024" loading="lazy" decoding="async" /></div></div>
+                <figcaption class="visually-hidden">Website development — responsive website concept. Temporary showcase image.</figcaption>
+              </figure>
+              <figure class="project-card" data-category="photo">
+                <div class="project-frame"><div class="project-image-window"><img class="project-image project-image-3" src="./assets/projects/project-previews.png" alt="Temporary photography project preview: a camera still life in natural light." width="1536" height="1024" loading="lazy" decoding="async" /></div></div>
+                <figcaption class="visually-hidden">Photography — still life. Temporary showcase image.</figcaption>
+              </figure>
+              <figure class="project-card" data-category="ui">
+                <div class="project-frame"><div class="project-image-window"><img class="project-image project-image-4" src="./assets/projects/project-previews.png" alt="Temporary UI project preview: mobile app interfaces on a deep red background." width="1536" height="1024" loading="lazy" decoding="async" /></div></div>
+                <figcaption class="visually-hidden">UI design — mobile app concept. Temporary showcase image.</figcaption>
+              </figure>
+              <figure class="project-card" data-category="web">
+                <div class="project-frame"><div class="project-image-window"><img class="project-image project-image-5" src="./assets/projects/project-previews.png" alt="Temporary website project preview: a creative studio website concept." width="1536" height="1024" loading="lazy" decoding="async" /></div></div>
+                <figcaption class="visually-hidden">Website development — creative studio concept. Temporary showcase image.</figcaption>
+              </figure>
+              <figure class="project-card" data-category="photo">
+                <div class="project-frame"><div class="project-image-window"><img class="project-image project-image-6" src="./assets/projects/project-previews.png" alt="Temporary photography project preview: warm architectural arches and shadows." width="1536" height="1024" loading="lazy" decoding="async" /></div></div>
+                <figcaption class="visually-hidden">Photography — architecture. Temporary showcase image.</figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="tools-section" aria-labelledby="tools-title" lang="en">
+        <div class="section-shell section-heading">
+          <h2 class="section-title" id="tools-title">tools that i<br />use</h2>
+          <p class="section-note">my tools to create<br />something different,<br />and aesthetic</p>
+        </div>
+        <div class="tools-marquee" data-tools data-pause-duration="4000" aria-label="Tools I use. Select a tool to pause and show its name.">
+          <div class="tools-track">
+            <!-- Customization: add/remove a tool-item, edit its data-tool, icon src,
+                 button aria-label, and visible tool-name. The loop updates automatically. -->
+            <ul class="tool-group">
+              <li class="tool-item" data-tool="python"><button class="tool-button" type="button" aria-label="Python" aria-pressed="false"><img src="./assets/tools/python.svg" alt="" width="112" height="112" loading="lazy" /></button><span class="tool-name" hidden>python</span></li>
+              <li class="tool-item" data-tool="figma"><button class="tool-button" type="button" aria-label="Figma" aria-pressed="false"><img src="./assets/tools/figma.svg" alt="" width="112" height="112" loading="lazy" /></button><span class="tool-name" hidden>figma</span></li>
+              <li class="tool-item" data-tool="illustrator"><button class="tool-button" type="button" aria-label="Adobe Illustrator" aria-pressed="false"><img src="./assets/tools/illustrator.svg" alt="" width="112" height="112" loading="lazy" /></button><span class="tool-name" hidden>adobe illustrator</span></li>
+              <li class="tool-item" data-tool="photoshop"><button class="tool-button" type="button" aria-label="Adobe Photoshop" aria-pressed="false"><img src="./assets/tools/photoshop.svg" alt="" width="112" height="112" loading="lazy" /></button><span class="tool-name" hidden>adobe photoshop</span></li>
+              <li class="tool-item" data-tool="acode"><button class="tool-button" type="button" aria-label="Acode" aria-pressed="false"><img src="./assets/tools/acode.svg" alt="" width="112" height="112" loading="lazy" /></button><span class="tool-name" hidden>acode</span></li>
+              <li class="tool-item" data-tool="vscode"><button class="tool-button" type="button" aria-label="Visual Studio Code" aria-pressed="false"><img src="./assets/tools/vscode.svg" alt="" width="112" height="112" loading="lazy" /></button><span class="tool-name" hidden>visual studio code</span></li>
+            </ul>
+          </div>
+        </div>
+        <p class="visually-hidden" role="status" aria-live="polite" data-tool-status></p>
+      </section>
+
+      <section class="experience-section" id="work-experience" aria-labelledby="experience-title" lang="en">
+        <div class="section-shell experience-grid">
+          <ol class="experience-timeline" aria-label="Career timeline">
+            <li class="timeline-item" data-reveal>
+              <span class="timeline-dot" aria-hidden="true"></span>
+              <h3><time datetime="2024">2024</time> – now</h3>
+              <p data-experience-copy="2024">shutterstock contributor
+freelance graphic designer</p>
+            </li>
+            <li class="timeline-item" data-reveal>
+              <span class="timeline-dot" aria-hidden="true"></span>
+              <h3><time datetime="2025">2025</time></h3>
+              <p data-experience-copy="2025">designer at Ilaikum Magazine
+web developer at Ilaikum Magazine
+photographer at Ibnu Abbas Student Council</p>
+            </li>
+            <li class="timeline-item" data-reveal>
+              <span class="timeline-dot" aria-hidden="true"></span>
+              <h3><time datetime="2026">2026</time> – now</h3>
+              <p data-experience-copy="2026">multimedia staff of media &amp; IT department at Ibnu Abbas Boarding School
+freelance web developer</p>
+            </li>
+          </ol>
+          <div class="experience-visual">
+            <h2 id="experience-title" data-reveal>work experience</h2>
+            <figure class="experience-photo" data-reveal>
+              <!-- Reuse the owner's supplied portrait until the camera portrait is supplied. -->
+              <img src="./assets/portrait.svg" alt="Naufal Rafi, freelancer in design, web development, and photography." width="721" height="800" loading="lazy" decoding="async" />
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact-section" id="contact" aria-labelledby="contact-title" tabindex="-1" lang="en">
+        <h2 class="contact-title" id="contact-title">let’s work together!</h2>
+
+        <div class="contact-orbit" data-contact-orbit data-preview-source="projects" data-orbit-speed="4.5" role="region" aria-roledescription="carousel" aria-label="Recent project previews" aria-describedby="orbit-instructions" tabindex="-1">
+          <p class="visually-hidden" id="orbit-instructions">Project previews rotate from left to right. Hover or focus to pause. Use the left and right arrow keys to explore, or Space to pause and resume.</p>
+          <div class="orbit-stage" data-orbit-stage aria-live="off"></div>
+          <a class="orbit-fallback" href="#recent-projects" data-scroll-target>view recent projects</a>
+          <button class="orbit-pause" type="button" data-orbit-pause aria-pressed="false" hidden>pause previews</button>
+        </div>
+
+        <!-- Future certificates: add <figure><img src="..." alt="..."><figcaption>...</figcaption></figure>
+             here, then set data-preview-source="custom" above. "mixed" includes projects too. -->
+        <template id="contact-custom-previews"></template>
+
+        <p class="contact-subtitle">start your business here!</p>
+        <ul class="contact-links" aria-label="Get in touch">
+          <li>
+            <!-- Temporary links: customize all contacts at the start of script/script.js. -->
+            <a class="contact-link" data-contact-link="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram — @naufalhafizhaa_">
+              <span class="contact-icon" aria-hidden="true"><img data-contact-icon src="./assets/social/instagram.svg" alt="" width="32" height="32" /></span>
+              <span class="contact-label" data-contact-label="instagram">@naufalhafizhaa_</span>
+            </a>
+          </li>
+          <li>
+            <a class="contact-link" data-contact-link="email" href="mailto:naufalraf837@gmail.com">
+              <span class="contact-icon" aria-hidden="true"><img data-contact-icon src="./assets/social/gmail.svg" alt="" width="32" height="32" /></span>
+              <span class="contact-label" data-contact-label="email">naufalraf837@gmail.com</span>
+            </a>
+          </li>
+          <li>
+            <!-- The shared configuration also updates the matching footer contact. -->
+            <a class="contact-link" data-contact-link="linkedin" href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn — Naufal Rafi">
+              <span class="contact-icon" aria-hidden="true"><img data-contact-icon src="./assets/social/linkedin.svg" alt="" width="32" height="32" /></span>
+              <span class="contact-label" data-contact-label="linkedin">Naufal Rafi</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer" lang="en">
+      <div class="footer-shell">
+        <p class="footer-copyright"><small>copyright 2026 All rights reserved</small></p>
+        <!-- Edit the contact configuration at the start of script/script.js to update
+             CTA and footer together. These href values also work without JavaScript. -->
+        <ul class="footer-contacts" aria-label="Contact Naufal Rafi">
+          <li><a class="footer-contact" data-contact-link="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram — @naufalhafizhaa_"><img data-contact-icon src="./assets/social/instagram.svg" alt="" width="32" height="32" /></a></li>
+          <li><a class="footer-contact" data-contact-link="whatsapp" href="https://www.whatsapp.com/" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><img data-contact-icon src="./assets/social/whatsapp.svg" alt="" width="32" height="32" /></a></li>
+          <li><a class="footer-contact" data-contact-link="email" href="mailto:naufalraf837@gmail.com" aria-label="Email — naufalraf837@gmail.com"><img data-contact-icon src="./assets/social/gmail.svg" alt="" width="32" height="32" /></a></li>
+          <li><a class="footer-contact" data-contact-link="linkedin" href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn — Naufal Rafi"><img data-contact-icon src="./assets/social/linkedin.svg" alt="" width="32" height="32" /></a></li>
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>
